@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const modules = [
+  {
+    id: 'fundamentos-python',
+    title: 'Fundamentos Python',
+    description: 'Variables, funciones, estructuras de datos y POO esencial',
+    lessons: 6,
+    xp: 550,
+    level: 'Principiante',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'apis-fastapi',
+    title: 'APIs con FastAPI',
+    description: 'Crea APIs REST profesionales con validación y autenticación',
+    lessons: 6,
+    xp: 600,
+    level: 'Intermedio',
+    color: 'bg-green-500'
+  },
+  {
+    id: 'github-actions',
+    title: 'GitHub Actions',
+    description: 'Automatiza CI/CD para tus proyectos Python',
+    lessons: 6,
+    xp: 500,
+    level: 'Intermedio',
+    color: 'bg-purple-500'
+  },
+  {
+    id: 'python-n8n',
+    title: 'Python + n8n',
+    description: 'Automatiza workflows integrando Python con n8n',
+    lessons: 6,
+    xp: 500,
+    level: 'Intermedio',
+    color: 'bg-orange-500'
+  },
+  {
+    id: 'python-docker',
+    title: 'Python + Docker',
+    description: 'Conteneriza tus aplicaciones Python para producción',
+    lessons: 6,
+    xp: 550,
+    level: 'Avanzado',
+    color: 'bg-cyan-500'
+  },
+  {
+    id: 'proyecto-integrador',
+    title: 'Proyecto Integrador',
+    description: 'Combina todo: API, Docker, GitHub Actions y n8n',
+    lessons: 6,
+    xp: 700,
+    level: 'Experto',
+    color: 'bg-red-500'
+  }
+];
+---
+
+<BaseLayout title="Módulos" description="Todos los módulos del curso">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-2">📚 Módulos del Curso</h1>
+    <p class="text-gray-600 mb-8">6 módulos progresivos diseñados para llevarte de principiante a experto</p>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {modules.map((module) => (
+        <a href={`/modules/${module.id}`} class="p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition shadow-sm hover:shadow-md">
+          <div class={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center text-white font-bold mb-4`}>
+            {module.lessons}
+          </div>
+          <span class="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">{module.level}</span>
+          <h3 class="font-bold text-lg mt-3 mb-2">{module.title}</h3>
+          <p class="text-sm text-gray-500 mb-4">{module.description}</p>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">{module.lessons} lecciones</span>
+            <span class="text-xs font-bold text-blue-600">+{module.xp} XP</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

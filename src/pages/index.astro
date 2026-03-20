@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Inicio">
+  <section class="py-20 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <div class="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+        🚀 Actualizado 2026 - Python 3.12+
+      </div>
+      
+      <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+        Domina Python para el
+        <span class="text-blue-600 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Mundo Real
+        </span>
+      </h1>
+      
+      <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        Aprende Python desde cero hasta crear APIs profesionales, automatizar con n8n, 
+        desplegar con Docker y configurar CI/CD con GitHub Actions.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/dashboard" class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-700 transition shadow-lg">
+          Comenzar Gratis
+        </a>
+        <a href="/modules" class="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-50 transition">
+          Ver Módulos
+        </a>
+      </div>
+      
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto">
+        <div>
+          <p class="text-3xl md:text-4xl font-bold text-blue-600">36</p>
+          <p class="text-sm text-gray-500">Lecciones</p>
+        </div>
+        <div>
+          <p class="text-3xl md:text-4xl font-bold text-blue-600">100+</p>
+          <p class="text-sm text-gray-500">Ejercicios</p>
+        </div>
+        <div>
+          <p class="text-3xl md:text-4xl font-bold text-blue-600">3400</p>
+          <p class="text-sm text-gray-500">XP Totales</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
