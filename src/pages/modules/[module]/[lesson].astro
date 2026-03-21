@@ -18,13 +18,35 @@ export async function getStaticPaths() {
 
 const { module, lesson } = Astro.params as { module: string; lesson: string };
 
-const lessonData: Record<string, Record<string, { title: string; content: string }>> = {
-  'fundamentos-python': {
-    '1': { title: 'Instalación y Entorno', content: '<p>Contenido de la lección 1</p>' }
-  }
-};
+// Build a map of available MDX lesson files under /src/content using an eager glob import.
+const mdxFiles = import.meta.glob('/src/content/**/*.mdx', { eager: true }) as Record<string, any>;
 
-const data = (lessonData[module]?.[lesson]) ?? { title: `Lección ${lesson}`, content: 'Contenido no disponible' };
+type MDXEntry = { component: any; frontmatter?: Record<string, any> };
+const mdxMap: Record<string, Record<string, MDXEntry>> = {};
+
+for (const p in mdxFiles) {
+  try {
+    const mod = mdxFiles[p];
+    const contentIndex = p.split('/').indexOf('content');
+    if (contentIndex === -1) continue;
+    const rel = p.split('/').slice(contentIndex + 1); // e.g. [ '00-fundamentos-python', '01-instalacion.mdx' ]
+    if (rel.length < 2) continue;
+    const folder = rel[0];
+    const filename = rel[1];
+    const moduleSlug = folder.replace(/^\d+-/, '');
+    const lessonMatch = filename.match(/^(\d+)/);
+    const lessonNumber = lessonMatch ? String(parseInt(lessonMatch[1], 10)) : filename.replace(/\D/g, '');
+    if (!mdxMap[moduleSlug]) mdxMap[moduleSlug] = {};
+    mdxMap[moduleSlug][lessonNumber] = { component: mod.default ?? mod, frontmatter: (mod as any).frontmatter ?? (mod as any).meta ?? {} };
+  } catch (err) {
+    // ignore parse errors for unexpected files
+  }
+}
+
+const mdxEntry = (mdxMap[module] && mdxMap[module][lesson]) ?? null;
+
+const data = mdxEntry ? { title: mdxEntry.frontmatter?.title ?? `Lección ${lesson}`, content: null } : { title: `Lección ${lesson}`, content: 'Contenido no disponible' };
+const MDXComponent = mdxEntry?.component ?? null;
 
 const prevLesson = Math.max(1, parseInt(lesson) - 1).toString();
 const nextLesson = (parseInt(lesson) + 1).toString();
@@ -37,7 +59,7 @@ const nextLesson = (parseInt(lesson) + 1).toString();
     <h1 class="text-3xl font-bold mb-6">{data.title}</h1>
     
     <article class="prose prose-slate max-w-none bg-white p-8 rounded-xl border">
-      <div set:html={data.content} />
+      {MDXComponent ? <MDXComponent /> : <div set:html={data.content} />}
     </article>
     
     <div class="mt-8 pt-8 border-t flex justify-between">

@@ -1,0 +1,185 @@
+---
+title: "Funciones y Módulos"
+description: "Creación de funciones reutilizables y organización de código"
+module: "fundamentos-python"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Crear funciones con parámetros y retornos tipados
+2. ✅ Organizar código en módulos reutilizables
+3. ✅ Aplicar principios de funciones puras
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Principios de Funciones Limpias
+
+| **Principio**             | **Descripción**            | **Beneficio**    |
+| ------------------------- | -------------------------- | ---------------- |
+| **Single Responsibility** | Una función = una tarea    | Fácil de testear |
+| **Pure Functions**        | Mismo input = mismo output | Predecible       |
+| **Explicit Dependencies** | Parámetros claros          | Legible          |
+
+---
+
+### Tipos de Funciones
+
+| **Tipo**           | **Característica**   | **Ejemplo**                |
+| ------------------ | -------------------- | -------------------------- |
+| **Sin parámetros** | No recibe argumentos | `def saludar():`           |
+| **Con parámetros** | Recibe argumentos    | `def sumar(a, b):`         |
+| **Con retorno**    | Devuelve un valor    | `return resultado`         |
+| **Con tipo hint**  | Especifica tipos     | `def suma(a: int) -> int:` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Ejemplo Junior
+
+```python
+def saludar(nombre):
+    print("Hola " + nombre)
+
+def sumar(a, b):
+    resultado = a + b
+    return resultado
+
+saludar("Hugo")
+print(sumar(5, 3))
+```
+
+
+
+### Ejemplo Senior
+
+```python
+from typing import Optional, List
+
+def formatear_saludo(nombre: str, idioma: str = "es") -> str:
+    """Genera un saludo personalizado."""
+    saludos = {"es": "Hola", "en": "Hi", "fr": "Salut"}
+    return f"{saludos.get(idioma, 'Hi')}, {nombre}"
+
+def calcular_promedio(numeros: List[float]) -> Optional[float]:
+    """Calcula el promedio de una lista de números."""
+    if not numeros:
+        return None
+    return round(sum(numeros) / len(numeros), 2)
+
+if __name__ == "__main__":
+    print(formatear_saludo("Hugo", "es"))
+    print(calcular_promedio([1.0, 2.0, 3.0, 4.0, 5.0]))
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Calculadora modular
+
+Crea un paquete `calculadora` con:
+```markdown
+1. `operaciones.py`: Funciones suma, resta, multiplicación, división
+2. `validacion.py`: Función para validar números
+3. `main.py`: Script principal que usa las funciones
+```
+-- Asegúrate de usar type hints y manejar errores (ej. división por cero)
+```python
+# operaciones.py
+def sumar(a: float, b: float) -> float:
+    return a + b
+
+def restar(a: float, b: float) -> float:
+    return a - b
+
+def multiplicar(a: float, b: float) -> float:
+    return a * b
+
+def dividir(a: float, b: float) -> float:
+    if b == 0:
+        raise ValueError("No se puede dividir por cero")
+    return a / b
+```
+
+```python
+# validacion.py
+def es_numero(valor: str) -> bool:
+    """Valida si un string es un número."""
+    try:
+        float(valor)
+        return True
+    except ValueError:
+        return False
+```
+
+---
+
+## ✅ Criterios de Éxito
+```markdown
+- [ ] Las funciones están en archivos separados
+- [ ] Cada función tiene type hints
+- [ ] Hay validación de errores (división por cero)
+- [ ] El script principal importa y usa las funciones
+````
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué es una función pura?**
+
+```markdown
+- Una función que imprime algo
+- Una función que siempre devuelve el mismo output para el mismo input ✅
+- Una función sin parámetros
+```
+
+**2. ¿Qué significa `-> int` en una función?**
+
+```markdown
+- El tipo de parámetro
+- El tipo de retorno ✅
+- El nombre de la función
+```
+
+**3. ¿Qué principio indica "una función = una tarea"?**
+
+```markdown
+- DRY (Don't Repeat Yourself)
+- Single Responsibility ✅
+- KISS (Keep It Simple, Stupid)
+```
+
+**4. ¿Qué hace `if __name__ == "__main__":`?**
+
+```markdown
+- Ejecuta código solo si el archivo se ejecuta directamente ✅
+- Importa módulos
+- Define una función
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**            | **URL**                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **Python Functions**   | [docs.python.org/3/tutorial/controlflow.html](https://docs.python.org/3/tutorial/controlflow.html) |
+| **Type Hints**         | [docs.python.org/3/library/typing.html](https://docs.python.org/3/library/typing.html)             |
+| **PEP 257 Docstrings** | [peps.python.org/pep-0257](https://peps.python.org/pep-0257/)                                      |
+| **Clean Code Python**  | [github.com/zedr/clean-code-python](https://github.com/zedr/clean-code-python)                     |
+
+```
+
+```

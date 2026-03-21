@@ -1,0 +1,196 @@
+---
+title: "Manejo de Errores y Excepciones"
+description: "Try/except, logging y manejo profesional de errores"
+module: "fundamentos-python"
+level: "intermediate"
+duration: "25 min"
+xp: 100
+order: 5
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Capturar y manejar excepciones correctamente
+2. ✅ Crear excepciones personalizadas
+3. ✅ Implementar logging profesional
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Jerarquía de Excepciones
+
+| **Excepción**           | **Descripción**         | **Ejemplo**             |
+| ----------------------- | ----------------------- | ----------------------- |
+| **`ValueError`**        | Valor incorrecto        | `int("abc")`            |
+| **`TypeError`**         | Tipo de dato incorrecto | `"5" + 5`               |
+| **`KeyError`**          | Clave no existe en dict | `dict["invalida"]`      |
+| **`IndexError`**        | Índice fuera de rango   | `lista[100]`            |
+| **`ZeroDivisionError`** | División por cero       | `10 / 0`                |
+| **`FileNotFoundError`** | Archivo no existe       | `open("no_existe.txt")` |
+
+---
+
+### Mejores Prácticas de Manejo de Errores
+
+| **Práctica**                | **Descripción**                   | **Beneficio**         |
+| --------------------------- | --------------------------------- | --------------------- |
+| **Especificar excepción**   | `except ValueError:` no `except:` | Evita errores ocultos |
+| **Loggear errores**         | Usar `logging` no `print`         | Trazabilidad          |
+| **Mensaje claro**           | Explicar qué salió mal            | Debug fácil           |
+| **Recuperar si es posible** | Reintentar o valor por defecto    | UX mejor              |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Ejemplo Junior
+
+```python
+try:
+    numero = int(input("Número: "))
+    resultado = 10 / numero
+    print("Resultado:", resultado)
+except:
+    print("Error")
+```
+
+### Ejemplo Senior
+
+```python
+import logging
+
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
+def dividir(a: float, b: float) -> float:
+    """Divide dos números con manejo de errores."""
+    if b == 0:
+        logger.error("Intento de división por cero")
+        raise ZeroDivisionError("El divisor no puede ser cero")
+    try:
+        resultado = a / b
+        logger.info(f"División exitosa: {a} / {b} = {resultado}")
+        return resultado
+    except TypeError as e:
+        logger.error(f"Tipo de dato incorrecto: {e}")
+        raise
+
+if __name__ == "__main__":
+    try:
+        print(dividir(10, 2))
+        print(dividir(10, 0))
+    except ZeroDivisionError as e:
+        logger.error(f"Error capturado: {e}")
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Validador de entrada de usuario
+
+Crea una función que:
+
+```markdown
+1. Pida un número al usuario
+2. Valide que sea un número válido
+3. Maneje errores con logging
+4. Reintente hasta 3 veces antes de fallar
+```
+
+-- Asegúrate de usar `ValueError` y `logging` correctamente
+
+```python
+# Tu código aquí
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def pedir_numero(max_intentos: int = 3) -> float:
+    """Pide un número al usuario con reintentos."""
+    for intento in range(1, max_intentos + 1):
+        try:
+            entrada = input(f"Intento {intento}/{max_intentos}: Ingresa un número: ")
+            numero = float(entrada)
+            logger.info(f"Número válido ingresado: {numero}")
+            return numero
+        except ValueError as e:
+            logger.warning(f"Intento {intento} fallido: {e}")
+            if intento == max_intentos:
+                logger.error("Máximo de intentos alcanzado")
+                raise
+    return None
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] La función maneja `ValueError` específicamente
+- [ ] Usa logging en lugar de print
+- [ ] Reintenta hasta 3 veces
+- [ ] Lanza error después de máximos intentos
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué excepción se lanza al dividir por cero?**
+
+```markdown
+- `ValueError`
+- `TypeError`
+- `ZeroDivisionError` ✅
+```
+
+**2. ¿Por qué evitar `except:` sin especificar?**
+
+```markdown
+- Es más rápido
+- Captura todo, incluso errores inesperados ✅
+- Es más legible
+```
+
+**3. ¿Qué módulo se usa para logging profesional?**
+
+```markdown
+- `print`
+- `logging` ✅
+- `debug`
+```
+
+**4. ¿Qué hace `logger.error()`?**
+
+```markdown
+- Imprime en consola
+- Registra el error con nivel ERROR ✅
+- Detiene el programa
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**               | **URL**                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Python Exceptions**     | [docs.python.org/3/library/exceptions.html](https://docs.python.org/3/library/exceptions.html) |
+| **Logging Module**        | [docs.python.org/3/library/logging.html](https://docs.python.org/3/library/logging.html)       |
+| **EAFP vs LBYL**          | [docs.python.org/3/glossary.html](https://docs.python.org/3/glossary.html)                     |
+| **Python Error Handling** | [realpython.com/python-exceptions](https://realpython.com/python-exceptions/)                  |
+
+```
+
+```

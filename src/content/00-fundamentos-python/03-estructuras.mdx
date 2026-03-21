@@ -1,0 +1,184 @@
+---
+title: "Estructuras de Datos Esenciales"
+description: "Listas, diccionarios, tuplas y sets"
+module: "fundamentos-python"
+level: "beginner"
+duration: "30 min"
+xp: 100
+order: 3
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Usar las 4 estructuras de datos principales
+2. ✅ Aplicar comprehensions eficientemente
+3. ✅ Elegir la estructura correcta para cada caso
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Las 4 Estructuras Principales
+
+| **Estructura** | **Mutable** | **Ordenada** | **Duplicados**   | **Uso Principal**    |
+| -------------- | ----------- | ------------ | ---------------- | -------------------- |
+| **`list`**     | ✅ Sí       | ✅ Sí        | ✅ Sí            | Secuencias ordenadas |
+| **`dict`**     | ✅ Sí       | ✅ Sí        | ❌ Claves únicas | Mapeo clave-valor    |
+| **`tuple`**    | ❌ No       | ✅ Sí        | ✅ Sí            | Datos inmutables     |
+| **`set`**      | ✅ Sí       | ❌ No        | ❌ No            | Membresía y unicidad |
+
+---
+
+### Cuándo Usar Cada Una
+
+| **Caso de Uso**       | **Estructura** | **Ejemplo**                      |
+| --------------------- | -------------- | -------------------------------- |
+| **Lista de tareas**   | `list`         | `["tarea1", "tarea2"]`           |
+| **Datos de usuario**  | `dict`         | `{"nombre": "Hugo", "edad": 30}` |
+| **Coordenadas fijas** | `tuple`        | `(lat, lon)`                     |
+| **Tags únicos**       | `set`          | `{"python", "docker", "api"}`    |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Ejemplo Junior
+
+```python
+# Lista
+numeros = [1, 2, 3, 4, 5]
+numeros.append(6)
+
+# Diccionario
+persona = {
+    "nombre": "Hugo",
+    "edad": 30,
+    "ciudad": "Madrid"
+}
+
+# Tupla
+coordenadas = (40.4168, -3.7038)
+
+# Set
+tags = {"python", "docker", "api"}
+tags.add("fastapi")
+```
+
+### Ejemplo Senior
+
+```python
+from typing import List, Dict, Tuple, Set
+
+# List comprehension
+numeros: List[int] = [1, 2, 3, 4, 5]
+pares: List[int] = [n for n in numeros if n % 2 == 0]
+cuadrados: List[int] = [n**2 for n in numeros]
+
+# Dict comprehension
+edades: Dict[str, int] = {"Hugo": 30, "Ana": 25}
+mayores: Dict[str, int] = {k: v for k, v in edades.items() if v >= 25}
+
+# Tuple unpacking
+lat, lon = (40.4168, -3.7038)
+
+# Set operations
+tags_comunes: Set[str] = {"python", "docker"} & {"python", "api"}
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Sistema de gestión de tareas
+
+Crea un programa que:
+
+```markdown
+1. Use una `list` para tareas pendientes
+2. Use un `dict` para detalles de cada tarea (nombre, prioridad, estado)
+3. Use un `set` para tags únicos
+4. Permita añadir, completar y listar tareas
+```
+
+-- Usa funciones para organizar el código
+
+```python
+# Tu código aquí
+tareas = []
+tags = set()
+
+def añadir_tarea(nombre, prioridad, tags_tarea):
+    tarea = {
+        "nombre": nombre,
+        "prioridad": prioridad,
+        "completada": False,
+        "tags": tags_tarea
+    }
+    tareas.append(tarea)
+    tags.update(tags_tarea)
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Las tareas se almacenan en una lista
+- [ ] Los detalles usan diccionario
+- [ ] Los tags son únicos (set)
+- [ ] Se puede añadir y listar tareas
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué estructura es inmutable?**
+
+```markdown
+- `list`
+- `dict`
+- `tuple` ✅
+```
+
+**2. ¿Qué estructura no permite duplicados?**
+
+```
+- `list`
+- `set` ✅
+- `tuple`
+```
+
+**3. ¿Qué estructura es mejor para mapeo clave-valor?**
+
+```markdown
+- `dict` ✅
+- `list`
+- `set`
+```
+
+**4. ¿Qué devuelve `[n for n in [1,2,3] if n > 1]`?**
+
+```markdown
+- `[1, 2, 3]`
+- `[2, 3]` ✅
+- `[1]`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                | **URL**                                                                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Python Data Structures** | [docs.python.org/3/tutorial/datastructures.html](https://docs.python.org/3/tutorial/datastructures.html)                                 |
+| **Collections Module**     | [docs.python.org/3/library/collections.html](https://docs.python.org/3/library/collections.html)                                         |
+| **Python Comprehensions**  | [treyhunner.com/2015/12/python-list-comprehensions-now-in-color](https://treyhunner.com/2015/12/python-list-comprehensions-now-in-color) |
+
+```
+
+```

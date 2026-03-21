@@ -1,0 +1,252 @@
+---
+title: "Programación Orientada a Objetos (POO)"
+description: "Clases, herencia, composición y principios SOLID"
+module: "fundamentos-python"
+level: "intermediate"
+duration: "35 min"
+xp: 125
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Crear clases con atributos y métodos
+2. ✅ Aplicar herencia y composición
+3. ✅ Usar propiedades y decoradores
+4. ✅ Comprender los principios SOLID
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Los 4 Pilares de la POO
+
+| **Pilar**           | **Descripción**                          | **Ejemplo**             |
+| ------------------- | ---------------------------------------- | ----------------------- |
+| **Abstracción**     | Modelar objetos del mundo real           | `class Usuario:`        |
+| **Encapsulamiento** | Ocultar datos internos                   | `self.__password`       |
+| **Herencia**        | Reutilizar código de clase padre         | `class Admin(Usuario):` |
+| **Polimorfismo**    | Mismo método, diferentes comportamientos | `def saludar():`        |
+
+---
+
+### Principios SOLID
+
+| **Principio**             | **Descripción**                                   | **Beneficio**     |
+| ------------------------- | ------------------------------------------------- | ----------------- |
+| **S**ingle Responsibility | Una clase = una responsabilidad                   | Fácil de mantener |
+| **O**pen/Closed           | Abierto para extensión, cerrado para modificación | Escalable         |
+| **L**iskov Substitution   | Subclases sustituibles por clase padre            | Predecible        |
+| **I**nterface Segregation | Interfaces pequeñas y específicas                 | Flexible          |
+| **D**ependency Inversion  | Depender de abstracciones, no concreciones        | Desacoplado       |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Ejemplo Junior
+
+```python
+class Persona:
+    def __init__(self, nombre, edad):
+        self.nombre = nombre
+        self.edad = edad
+
+    def saludar(self):
+        print("Hola, soy " + self.nombre)
+
+    def cumplir_anios(self):
+        self.edad += 1
+
+# Uso
+persona = Persona("Hugo", 30)
+persona.saludar()
+persona.cumplir_anios()
+```
+
+### Ejemplo Senior
+
+```python
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import List, Optional
+from datetime import datetime
+
+@dataclass
+class Usuario(ABC):
+    """Clase abstracta base para todos los usuarios."""
+    id: int
+    nombre: str
+    email: str
+    fecha_creacion: datetime = field(default_factory=datetime.now)
+
+    @abstractmethod
+    def obtener_permisos(self) -> List[str]:
+        """Devuelve lista de permisos del usuario."""
+        pass
+
+    def saludar(self) -> str:
+        return f"Hola, soy {self.nombre}"
+
+@dataclass
+class Admin(Usuario):
+    """Administrador con permisos completos."""
+    departamento: str = "IT"
+
+    def obtener_permisos(self) -> List[str]:
+        return ["leer", "escribir", "eliminar", "administrar"]
+
+    def crear_usuario(self, nombre: str, email: str) -> Usuario:
+        """Crea un nuevo usuario (solo admins)."""
+        pass
+
+@dataclass
+class Viewer(Usuario):
+    """Usuario solo lectura."""
+
+    def obtener_permisos(self) -> List[str]:
+        return ["leer"]
+
+# Uso
+if __name__ == "__main__":
+    admin = Admin(id=1, nombre="Hugo", email="hugo@ejemplo.com")
+    viewer = Viewer(id=2, nombre="Ana", email="ana@ejemplo.com")
+
+    print(admin.saludar())
+    print(f"Permisos admin: {admin.obtener_permisos()}")
+    print(f"Permisos viewer: {viewer.obtener_permisos()}")
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Sistema de gestión de biblioteca
+
+Crea un sistema con:
+
+```markdown
+1. Clase base `Libro` con título, autor, ISBN
+2. Clase `LibroPrestado` que herede de `Libro` con fecha de préstamo
+3. Clase `Usuario` que pueda prestar libros
+4. Validación de que un usuario no preste más de 5 libros
+```
+
+-- POO: Programación Orientada a Objetos
+
+```python
+# Tu código aquí
+from dataclasses import dataclass, field
+from typing import List
+from datetime import datetime
+
+@dataclass
+class Libro:
+    titulo: str
+    autor: str
+    isbn: str
+    disponible: bool = True
+
+@dataclass
+class LibroPrestado(Libro):
+    fecha_prestamo: datetime = field(default_factory=datetime.now)
+    fecha_devolucion: Optional[datetime] = None
+
+@dataclass
+class Usuario:
+    nombre: str
+    id: int
+    libros_prestados: List[LibroPrestado] = field(default_factory=list)
+
+    def prestar_libro(self, libro: Libro) -> bool:
+        if len(self.libros_prestados) >= 5:
+            print("Límite de libros alcanzado")
+            return False
+        if not libro.disponible:
+            print("Libro no disponible")
+            return False
+        libro_prestado = LibroPrestado(
+            titulo=libro.titulo,
+            autor=libro.autor,
+            isbn=libro.isbn,
+            disponible=False
+        )
+        self.libros_prestados.append(libro_prestado)
+        libro.disponible = False
+        return True
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] La clase `Libro` tiene atributos básicos
+- [ ] `LibroPrestado` hereda de `Libro` con fecha adicional
+- [ ] `Usuario` tiene método para prestar libros
+- [ ] Hay validación de máximo 5 libros por usuario
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué decorador define una clase de datos?**
+
+```markdown
+- `@class`
+- `@dataclass` ✅
+- `@struct`
+```
+
+**2. ¿Qué palabra clave define método abstracto?**
+
+```markdown
+- `@abstract`
+- `@abstractmethod` ✅
+- `@virtual`
+```
+
+**3. ¿Qué principio SOLID indica "una clase = una responsabilidad"?**
+
+```markdown
+- **S**ingle Responsibility ✅
+- **O**pen/Closed
+- **L**iskov Substitution
+```
+
+**4. ¿Cómo se define herencia en Python?**
+
+```markdown
+- `class Hijo extends Padre:`
+- `class Hijo(Pariente):`
+- `class Hijo(Padre):` ✅
+```
+
+**5. ¿Qué es el encapsulamiento?**
+
+```markdown
+- Ocultar datos internos con `__` ✅
+- Crear muchas clases
+- Usar herencia múltiple
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                 | **URL**                                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Python Classes**          | [docs.python.org/3/tutorial/classes.html](https://docs.python.org/3/tutorial/classes.html)                        |
+| **Dataclasses**             | [docs.python.org/3/library/dataclasses.html](https://docs.python.org/3/library/dataclasses.html)                  |
+| **ABC Module**              | [docs.python.org/3/library/abc.html](https://docs.python.org/3/library/abc.html)                                  |
+| **SOLID Principles Python** | [python-patterns.guide](https://python-patterns.guide/)                                                           |
+| **Real Python OOP**         | [realpython.com/python3-object-oriented-programming](https://realpython.com/python3-object-oriented-programming/) |
+
+```
+
+```

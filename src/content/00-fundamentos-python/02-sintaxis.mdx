@@ -1,0 +1,146 @@
+---
+title: "Sintaxis Básica y Tipos de Datos"
+description: "Variables, tipos primitivos y operaciones fundamentales"
+module: "fundamentos-python"
+level: "beginner"
+duration: "25 min"
+xp: 75
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Declarar variables con tipado correcto
+2. ✅ Usar los tipos primitivos de Python
+3. ✅ Escribir código Pythonic
+````
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Datos Primitivos
+
+| **Tipo**    | **Ejemplo**          | **Uso**           |
+| ----------- | -------------------- | ----------------- |
+| **`int`**   | `42`, `-10`, `0`     | Números enteros   |
+| **`float`** | `3.14`, `-0.5`       | Números decimales |
+| **`str`**   | `"hola"`, `'Python'` | Texto             |
+| **`bool`**  | `True`, `False`      | Valores lógicos   |
+| **`None`**  | `None`               | Ausencia de valor |
+
+---
+
+### Reglas de Nomenclatura
+
+| **Regla**                  | **Válido**         | **Inválido**      |
+| -------------------------- | ------------------ | ----------------- |
+| **Sin espacios**           | `mi_variable`      | `mi variable`     |
+| **Sin empezar con número** | `variable1`        | `1variable`       |
+| **Usar guión bajo**        | `nombre_completo`  | `nombre-completo` |
+| **Distingue mayúsculas**   | `Nombre`, `nombre` | -                 |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Ejemplo Junior
+
+```python
+nombre = "Hugo"
+edad = 30
+altura = 1.75
+es_activo = True
+
+imc = 72 / (1.75 ** 2)
+print("IMC:", imc)
+```
+
+`````
+
+### Ejemplo Senior
+
+```python
+from typing import Final
+
+PI: Final[float] = 3.14159
+
+def calcular_imc(peso_kg: float, altura_m: float) -> float:
+    """Calcula el Índice de Masa Corporal."""
+    if altura_m <= 0:
+        raise ValueError("La altura debe ser positiva")
+    return round(peso_kg / (altura_m ** 2), 2)
+
+if __name__ == "__main__":
+    resultado = calcular_imc(72.0, 1.75)
+    print(f"IMC: {resultado}")
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Calculadora de edad en días
+
+Crea un script que:
+````markdown
+1. Pida la edad en años (input)
+2. Calcule la edad en días (considerando años bisiestos)
+3. Muestre el resultado con formato
+`````
+
+```python
+# Tu código aquí
+edad_anios = int(input("¿Cuántos años tienes? "))
+edad_dias = edad_anios * 365 + edad_anios // 4
+print(f"Tienes aproximadamente {edad_dias} días de vida")
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] El script pide input al usuario
+- [ ] Calcula correctamente los días
+- [ ] Muestra el resultado con formato legible
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué tipo es `3.14`?**
+
+```markdown
+- `int`
+- `float` ✅
+- `str`
+```
+
+**2. ¿Cómo se declara una constante en Python?**
+
+```markdown
+- `const PI = 3.14`
+- `PI: Final[float] = 3.14` ✅
+- `#define PI 3.14`
+```
+
+**3. ¿Qué nombre de variable es válido?**
+
+```markdown
+- `mi-variable`
+- `mi_variable` ✅
+- `123variable`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**           | **URL**                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| **Python Data Types** | [docs.python.org/3/library/stdtypes.html](https://docs.python.org/3/library/stdtypes.html) |
+| **PEP 8 Style Guide** | [pep8.org](https://pep8.org/)                                                              |
+| **Python Type Hints** | [docs.python.org/3/library/typing.html](https://docs.python.org/3/library/typing.html)     |
