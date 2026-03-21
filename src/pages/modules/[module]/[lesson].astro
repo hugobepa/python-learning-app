@@ -1,370 +1,38 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 
-export interface Props {
-  module: string;
-  lesson: string;
+export interface PathInfo {
+  params: { module: string; lesson: string };
 }
 
 export async function getStaticPaths() {
   const modules = ['fundamentos-python', 'apis-fastapi', 'github-actions', 'python-n8n', 'python-docker', 'proyecto-integrador'];
-  const paths = [];
-  
-  modules.forEach(module => {
+  const paths: PathInfo[] = [];
+  for (const m of modules) {
     for (let i = 1; i <= 6; i++) {
-      paths.push({
-        params: { module, lesson: i.toString() }
-      });
+      paths.push({ params: { module: m, lesson: i.toString() } });
     }
-  });
-  
+  }
   return paths;
 }
 
-const { module, lesson } = Astro.props;
+const { module, lesson } = Astro.params as { module: string; lesson: string };
 
 const lessonData: Record<string, Record<string, { title: string; content: string }>> = {
   'fundamentos-python': {
-    '1': {
-      title: 'Instalación y Entorno',
-      content: `
-## 🎯 Objetivos de Aprendizaje
-
-Al finalizar esta lección podrás:
-1. ✅ Instalar Python 3.12+ y verificar la instalación
-2. ✅ Crear entornos virtuales para cada proyecto
-3. ✅ Configurar tu editor de código (VS Code)
-
----
-
-## 📚 Teoría Esencial
-
-### ¿Por qué Entornos Virtuales?
-
-| Sin Entorno Virtual | Con Entorno Virtual |
-|---------------------|---------------------|
-| Dependencias globales | Dependencias aisladas |
-| Conflictos de versión | Versiones por proyecto |
-| Difícil de reproducir | Fácil con requirements.txt |
-
----
-
-## 💻 Ejemplo Guiado
-
-### Ejemplo Junior
-
-\`\`\`bash
-# Crear entorno virtual
-python -m venv .venv
-
-# Activar (Windows PowerShell)
-.venv\\Scripts\\Activate.ps1
-
-# Activar (macOS/Linux)
-source .venv/bin/activate
-
-# Instalar paquete
-pip install fastapi
-\`\`\`
-
-### Ejemplo Senior
-
-\`\`\`bash
-# Crear con versión específica
-python3.12 -m venv .venv
-
-# Activar y verificar
-source .venv/bin/activate
-which python
-\`\`\`
-
----
-
-## 🎮 Ejercicio Práctico
-
-**Reto:** Configura tu primer proyecto Python
-
-1. Crea una carpeta \`python-curso\`
-2. Dentro, crea un entorno virtual \`.venv\`
-3. Actívalo e instala \`fastapi\`
-4. Crea \`src/main.py\` con un print
-5. Ejecútalo
-
----
-
-## ✅ Check de Comprensión
-
-1. ¿Qué comando crea un entorno virtual?
-   - \`python -m venv .venv\` ✅
-
-2. ¿Por qué NO se sube \`.venv\` a Git?
-   - Es específico de cada sistema ✅
-`
-    },
-    '2': {
-      title: 'Sintaxis Básica',
-      content: `
-## 🎯 Objetivos
-
-1. ✅ Declarar variables con tipado correcto
-2. ✅ Usar los tipos primitivos de Python
-3. ✅ Escribir código Pythonic
-
----
-
-## 📚 Teoría
-
-### Tipos de Datos
-
-| Tipo | Ejemplo | Uso |
-|------|---------|-----|
-| \`int\` | \`42\` | Números enteros |
-| \`float\` | \`3.14\` | Números decimales |
-| \`str\` | \`"hola"\` | Texto |
-| \`bool\` | \`True\` | Valores lógicos |
-
----
-
-## 💻 Ejemplos
-
-### Junior
-
-\`\`\`python
-nombre = "Hugo"
-edad = 30
-\`\`\`
-
-### Senior
-
-\`\`\`python
-from typing import Final
-
-PI: Final[float] = 3.14159
-
-def calcular_imc(peso: float, altura: float) -> float:
-    return round(peso / (altura ** 2), 2)
-\`\`\`
-`
-    },
-    '3': {
-      title: 'Estructuras de Datos',
-      content: `
-## 🎯 Objetivos
-
-1. ✅ Usar listas, dicts, tuples y sets
-2. ✅ Aplicar comprehensions
-3. ✅ Elegir la estructura correcta
-
----
-
-## 📚 Teoría
-
-### Las 4 Estructuras Principales
-
-| Estructura | Mutable | Ordenada | Duplicados |
-|------------|---------|----------|------------|
-| \`list\` | ✅ | ✅ | ✅ |
-| \`dict\` | ✅ | ✅ | Claves únicas |
-| \`tuple\` | ❌ | ✅ | ✅ |
-| \`set\` | ✅ | ❌ | ❌ |
-
----
-
-## 💻 Ejemplos
-
-### Junior
-
-\`\`\`python
-numeros = [1, 2, 3, 4, 5]
-persona = {"nombre": "Hugo", "edad": 30}
-\`\`\`
-
-### Senior
-
-\`\`\`python
-numeros = [1, 2, 3, 4, 5]
-pares = [n for n in numeros if n % 2 == 0]
-cuadrados = {n: n**2 for n in numeros}
-\`\`\`
-`
-    },
-    '4': {
-      title: 'Funciones y Módulos',
-      content: `
-## 🎯 Objetivos
-
-1. ✅ Crear funciones con type hints
-2. ✅ Organizar código en módulos
-3. ✅ Aplicar funciones puras
-
----
-
-## 📚 Teoría
-
-### Principios de Funciones Limpias
-
-| Principio | Descripción |
-|-----------|-------------|
-| Single Responsibility | Una función = una tarea |
-| Pure Functions | Mismo input = mismo output |
-| Explicit Dependencies | Parámetros claros |
-
----
-
-## 💻 Ejemplos
-
-### Junior
-
-\`\`\`python
-def saludar(nombre):
-    print("Hola " + nombre)
-\`\`\`
-
-### Senior
-
-\`\`\`python
-def formatear_saludo(nombre: str, idioma: str = "es") -> str:
-    """Genera un saludo personalizado."""
-    saludos = {"es": "Hola", "en": "Hi"}
-    return f"{saludos.get(idioma, 'Hi')}, {nombre}"
-\`\`\`
-`
-    },
-    '5': {
-      title: 'Manejo de Errores',
-      content: `
-## 🎯 Objetivos
-
-1. ✅ Capturar y manejar excepciones
-2. ✅ Crear excepciones personalizadas
-3. ✅ Implementar logging
-
----
-
-## 📚 Teoría
-
-### Jerarquía de Excepciones
-
-\`\`\`
-BaseException
-├── SystemExit
-├── KeyboardInterrupt
-└── Exception
-    ├── ValueError
-    ├── TypeError
-    └── KeyError
-\`\`\`
-
----
-
-## 💻 Ejemplos
-
-### Junior
-
-\`\`\`python
-try:
-    numero = int(input("Número: "))
-    resultado = 10 / numero
-except:
-    print("Error")
-\`\`\`
-
-### Senior
-
-\`\`\`python
-import logging
-
-logger = logging.getLogger(__name__)
-
-def dividir(a: float, b: float) -> float:
-    if b == 0:
-        raise ZeroDivisionError("Divisor no puede ser cero")
-    return a / b
-
-try:
-    resultado = dividir(10, 0)
-except ZeroDivisionError as e:
-    logger.error(f"Error: {e}")
-\`\`\`
-`
-    },
-    '6': {
-      title: 'POO Esencial',
-      content: `
-## 🎯 Objetivos
-
-1. ✅ Crear clases con atributos y métodos
-2. ✅ Aplicar herencia y composición
-3. ✅ Usar propiedades y decoradores
-
----
-
-## 📚 Teoría
-
-### Principios SOLID
-
-| Principio | Descripción |
-|-----------|-------------|
-| **S**ingle Responsibility | Una clase = una responsabilidad |
-| **O**pen/Closed | Abierto para extensión |
-| **L**iskov Substitution | Subclases sustituibles |
-| **I**nterface Segregation | Interfaces pequeñas |
-| **D**ependency Inversion | Depender de abstracciones |
-
----
-
-## 💻 Ejemplos
-
-### Junior
-
-\`\`\`python
-class Persona:
-    def __init__(self, nombre, edad):
-        self.nombre = nombre
-        self.edad = edad
-    
-    def saludar(self):
-        print("Hola, soy " + self.nombre)
-\`\`\`
-
-### Senior
-
-\`\`\`python
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
-@dataclass
-class Usuario(ABC):
-    id: int
-    nombre: str
-    email: str
-    
-    @abstractmethod
-    def obtener_permisos(self) -> list:
-        pass
-
-@dataclass
-class Admin(Usuario):
-    def obtener_permisos(self) -> list:
-        return ["leer", "escribir", "eliminar"]
-\`\`\`
-`
-    }
+    '1': { title: 'Instalación y Entorno', content: '<p>Contenido de la lección 1</p>' }
   }
 };
 
-const data = lessonData[module]?.[lesson] || {
-  title: \`Lección ${lesson}\`,
-  content: 'Contenido no disponible'
-};
+const data = (lessonData[module]?.[lesson]) ?? { title: `Lección ${lesson}`, content: 'Contenido no disponible' };
 
-const prevLesson = (parseInt(lesson) - 1).toString();
+const prevLesson = Math.max(1, parseInt(lesson) - 1).toString();
 const nextLesson = (parseInt(lesson) + 1).toString();
 ---
 
 <BaseLayout title={data.title} description="Lección del curso">
   <div class="max-w-4xl mx-auto px-4 py-8">
-    <a href={\`/modules/${module}\`} class="text-blue-600 hover:underline mb-4 inline-block">← Volver al módulo</a>
+    <a href={`/modules/${module}`} class="text-blue-600 hover:underline mb-4 inline-block">← Volver al módulo</a>
     
     <h1 class="text-3xl font-bold mb-6">{data.title}</h1>
     
@@ -373,12 +41,11 @@ const nextLesson = (parseInt(lesson) + 1).toString();
     </article>
     
     <div class="mt-8 pt-8 border-t flex justify-between">
-      <a href={\`/modules/${module}/${prevLesson}\`} class="text-gray-600 hover:text-gray-900">
-        ← Anterior
-      </a>
-      <a href={\`/modules/${module}/${nextLesson}\`} class="text-blue-600 hover:text-blue-800">
-        Siguiente →
-      </a>
+      <a href={`/modules/${module}/${prevLesson}`} class="text-gray-600 hover:text-gray-900">← Anterior</a>
+      <a href={`/modules/${module}/${nextLesson}`} class="text-blue-600 hover:text-blue-800">Siguiente →</a>
     </div>
   </div>
 </BaseLayout>
+
+
+

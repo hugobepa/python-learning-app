@@ -1,139 +1,25 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '@layouts/BaseLayout.astro';
 
-export interface Props {
-  module: string;
-}
-
-export async function getStaticPaths() {
-  return [
-    { params: { module: 'fundamentos-python' } },
-    { params: { module: 'apis-fastapi' } },
-    { params: { module: 'github-actions' } },
-    { params: { module: 'python-n8n' } },
-    { params: { module: 'python-docker' } },
-    { params: { module: 'proyecto-integrador' } },
-  ];
-}
-
-const { module } = Astro.props;
-
-// ✅ VALIDACIÓN: Si module es undefined, mostrar error
-if (!module) {
-  return new Response(null, { status: 404 });
-}
-
-const moduleData: Record<string, { title: string; description: string; lessons: Array<{ title: string; duration: string; xp: number; order: number }> }> = {
-  'fundamentos-python': {
-    title: 'Fundamentos Python',
-    description: 'Variables, funciones, estructuras de datos y POO esencial',
-    lessons: [
-      { title: 'Instalación y Entorno', duration: '20 min', xp: 50, order: 1 },
-      { title: 'Sintaxis Básica', duration: '25 min', xp: 75, order: 2 },
-      { title: 'Estructuras de Datos', duration: '30 min', xp: 100, order: 3 },
-      { title: 'Funciones y Módulos', duration: '30 min', xp: 100, order: 4 },
-      { title: 'Manejo de Errores', duration: '25 min', xp: 100, order: 5 },
-      { title: 'POO Esencial', duration: '35 min', xp: 125, order: 6 }
-    ]
-  },
-  'apis-fastapi': {
-    title: 'APIs con FastAPI',
-    description: 'Crea APIs REST profesionales con validación y autenticación',
-    lessons: [
-      { title: 'Introducción a FastAPI', duration: '20 min', xp: 50, order: 1 },
-      { title: 'Primer Endpoint', duration: '25 min', xp: 75, order: 2 },
-      { title: 'Modelos Pydantic', duration: '30 min', xp: 100, order: 3 },
-      { title: 'CRUD Completo', duration: '35 min', xp: 125, order: 4 },
-      { title: 'Autenticación JWT', duration: '30 min', xp: 100, order: 5 },
-      { title: 'Testing de APIs', duration: '30 min', xp: 100, order: 6 }
-    ]
-  },
-  'github-actions': {
-    title: 'GitHub Actions',
-    description: 'Automatiza CI/CD para tus proyectos Python',
-    lessons: [
-      { title: 'Conceptos de Workflows', duration: '20 min', xp: 50, order: 1 },
-      { title: 'Python CI/CD', duration: '25 min', xp: 75, order: 2 },
-      { title: 'Secrets y Variables', duration: '25 min', xp: 75, order: 3 },
-      { title: 'Matrix Testing', duration: '30 min', xp: 100, order: 4 },
-      { title: 'Deploy Automation', duration: '30 min', xp: 100, order: 5 },
-      { title: 'Scheduled Tasks', duration: '25 min', xp: 75, order: 6 }
-    ]
-  },
-  'python-n8n': {
-    title: 'Python + n8n',
-    description: 'Automatiza workflows integrando Python con n8n',
-    lessons: [
-      { title: 'Integración y Conceptos', duration: '20 min', xp: 50, order: 1 },
-      { title: 'Webhooks en n8n', duration: '25 min', xp: 75, order: 2 },
-      { title: 'Code Node con Python', duration: '30 min', xp: 100, order: 3 },
-      { title: 'Conexiones a APIs', duration: '30 min', xp: 100, order: 4 },
-      { title: 'Error Handling', duration: '25 min', xp: 75, order: 5 },
-      { title: 'Patrones de Producción', duration: '30 min', xp: 100, order: 6 }
-    ]
-  },
-  'python-docker': {
-    title: 'Python + Docker',
-    description: 'Conteneriza tus aplicaciones Python para producción',
-    lessons: [
-      { title: 'Dockerfile Básico', duration: '25 min', xp: 75, order: 1 },
-      { title: 'Multi-stage Builds', duration: '30 min', xp: 100, order: 2 },
-      { title: 'Docker Compose', duration: '30 min', xp: 100, order: 3 },
-      { title: 'Volúmenes y Redes', duration: '30 min', xp: 100, order: 4 },
-      { title: 'Production Ready', duration: '35 min', xp: 125, order: 5 },
-      { title: 'Optimización y Seguridad', duration: '30 min', xp: 100, order: 6 }
-    ]
-  },
-  'proyecto-integrador': {
-    title: 'Proyecto Integrador',
-    description: 'Combina todo: API, Docker, GitHub Actions y n8n',
-    lessons: [
-      { title: 'Arquitectura Completa', duration: '30 min', xp: 100, order: 1 },
-      { title: 'API Dockerizada', duration: '35 min', xp: 125, order: 2 },
-      { title: 'GitHub Actions CI', duration: '30 min', xp: 100, order: 3 },
-      { title: 'n8n Workflow', duration: '30 min', xp: 100, order: 4 },
-      { title: 'Deploy Completo', duration: '40 min', xp: 150, order: 5 },
-      { title: 'Mantenimiento y Monitoring', duration: '35 min', xp: 125, order: 6 }
-    ]
-  }
-};
-
-// ✅ VALIDACIÓN: Usar datos por defecto si el módulo no existe
-const data = moduleData[module] ?? {
-  title: module.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-  description: 'Contenido del módulo',
-  lessons: []
-};
+const modules = [
+  { slug: 'fundamentos-python', title: 'Fundamentos Python', description: 'Variables, funciones, estructuras de datos y POO esencial' },
+  { slug: 'apis-fastapi', title: 'APIs con FastAPI', description: 'Crea APIs REST profesionales con validación y autenticación' },
+  { slug: 'github-actions', title: 'GitHub Actions', description: 'Automatiza CI/CD para tus proyectos Python' },
+  { slug: 'python-n8n', title: 'Python + n8n', description: 'Automatiza workflows integrando Python con n8n' },
+  { slug: 'python-docker', title: 'Python + Docker', description: 'Conteneriza tus aplicaciones Python para producción' },
+  { slug: 'proyecto-integrador', title: 'Proyecto Integrador', description: 'Combina API, Docker, GitHub Actions y n8n' },
+];
 ---
-
-<BaseLayout title={data.title} description={data.description}>
+<BaseLayout title="Módulos" description="Lista de módulos disponibles">
   <div class="max-w-4xl mx-auto px-4 py-8">
-    <a href="/modules" class="text-blue-600 hover:underline mb-4 inline-block">← Volver a módulos</a>
-    
-    <h1 class="text-3xl font-bold mb-4">{data.title}</h1>
-    <p class="text-gray-600 mb-8">{data.description}</p>
-    
-    {data.lessons.length === 0 ? (
-      <div class="text-center py-12">
-        <p class="text-gray-500 text-lg">Este módulo está en construcción</p>
-        <a href="/modules" class="text-blue-600 hover:underline mt-4 inline-block">← Volver a módulos</a>
-      </div>
-    ) : (
-      <div class="space-y-4">
-        {data.lessons.map((lesson) => (
-          <div class="p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-bold text-lg">{lesson.order}. {lesson.title}</h3>
-                <p class="text-sm text-gray-500 mt-1">⏱️ {lesson.duration} • 🏆 {lesson.xp} XP</p>
-              </div>
-              <a href={`/modules/${module}/${lesson.order}`} class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                Comenzar
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
+    <h1 class="text-3xl font-bold mb-6">Módulos</h1>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {modules.map((m) => (
+        <a href={`/modules/${m.slug}`} class="block p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition">
+          <h3 class="font-bold text-lg">{m.title}</h3>
+          <p class="text-sm text-gray-600 mt-2">{m.description}</p>
+        </a>
+      ))}
+    </div>
   </div>
 </BaseLayout>

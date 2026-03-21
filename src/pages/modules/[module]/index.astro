@@ -12,7 +12,7 @@ export async function getStaticPaths() {
   ];
 }
 
-const { module } = Astro.props;
+const { module } = Astro.params;
 
 const moduleData: Record<string, { title: string; description: string; lessons: Array<{ title: string; duration: string; xp: number; order: number }> }> = {
   'fundamentos-python': {
