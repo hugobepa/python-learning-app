@@ -3,5 +3,41 @@
 @tailwind utilities;
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* ── MDX / prose responsive fixes ── */
+
+/* Code blocks scroll horizontally instead of overflowing */
+.prose pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Tables scroll horizontally on narrow screens */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Images never exceed their container */
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inline code wraps rather than breaking layout */
+.prose :not(pre) > code {
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Long URLs / unbreakable strings inside prose wrap */
+.prose {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }

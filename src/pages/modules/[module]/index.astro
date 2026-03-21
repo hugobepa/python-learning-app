@@ -108,15 +108,18 @@ const lessons = data?.lessons ?? [];
         <a href="/modules" class="text-blue-600 hover:underline">← Volver a módulos</a>
       </div>
     ) : (
-      <div class="space-y-4">
+      <div class="space-y-3 sm:space-y-4">
         {lessons.map((lesson) => (
-          <div class="p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-bold text-lg">{lesson.order}. {lesson.title}</h3>
+          <div class="p-4 sm:p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div class="min-w-0">
+                <h3 class="font-bold text-base sm:text-lg">{lesson.order}. {lesson.title}</h3>
                 <p class="text-sm text-gray-500 mt-1">⏱️ {lesson.duration} • 🏆 {lesson.xp} XP</p>
               </div>
-              <a href={`/modules/${module}/${lesson.order}`} class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+              <a
+                href={`/modules/${module}/${lesson.order}`}
+                class="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition text-center text-sm sm:text-base sm:shrink-0"
+              >
                 Comenzar
               </a>
             </div>
