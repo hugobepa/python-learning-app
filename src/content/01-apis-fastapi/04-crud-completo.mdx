@@ -1,0 +1,208 @@
+---
+title: "CRUD Completo con FastAPI"
+description: "Create, Read, Update, Delete operations"
+module: "apis-fastapi"
+level: "intermediate"
+duration: "35 min"
+xp: 125
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Implementar operaciones CRUD completas
+2. ✅ Manejar errores 404 correctamente
+3. ✅ Usar HTTP status codes apropiados
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Operaciones CRUD
+
+| **Operación** | **Método HTTP** | **Endpoint**  | **Status Code** |
+| ------------- | --------------- | ------------- | --------------- |
+| **Create**    | POST            | `/items/`     | 201 Created     |
+| **Read**      | GET             | `/items/{id}` | 200 OK          |
+| **Update**    | PUT/PATCH       | `/items/{id}` | 200 OK          |
+| **Delete**    | DELETE          | `/items/{id}` | 204 No Content  |
+
+---
+
+### HTTP Status Codes
+
+| **Código** | **Significado**       | **Cuándo Usar**          |
+| ---------- | --------------------- | ------------------------ |
+| **200**    | OK                    | GET, PUT, PATCH exitosos |
+| **201**    | Created               | POST exitoso             |
+| **204**    | No Content            | DELETE exitoso           |
+| **400**    | Bad Request           | Datos inválidos          |
+| **404**    | Not Found             | Recurso no existe        |
+| **500**    | Internal Server Error | Error del servidor       |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### CRUD Completo
+
+```python
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
+from typing import Optional, List
+
+app = FastAPI()
+
+class Item(BaseModel):
+    id: int
+    nombre: str
+    precio: float
+    descripcion: Optional[str] = None
+
+# Base de datos simulada
+items_db = {}
+
+@app.post("/items/", response_model=Item, status_code=status.HTTP_201_CREATED)
+def crear_item(item: Item):
+    if item.id in items_db:
+        raise HTTPException(status_code=400, detail="El ID ya existe")
+    items_db[item.id] = item
+    return item
+
+@app.get("/items/", response_model=List[Item])
+def listar_items():
+    return list(items_db.values())
+
+@app.get("/items/{item_id}", response_model=Item)
+def obtener_item(item_id: int):
+    if item_id not in items_db:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    return items_db[item_id]
+
+@app.put("/items/{item_id}", response_model=Item)
+def actualizar_item(item_id: int, item: Item):
+    if item_id not in items_db:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    items_db[item_id] = item
+    return item
+
+@app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_item(item_id: int):
+    if item_id not in items_db:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    del items_db[item_id]
+    return None
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** API de tareas (Todo List)
+
+Crea un CRUD completo para tareas:
+
+```markdown
+1. `POST /tareas/` → Crear tarea
+2. `GET /tareas/` → Listar todas las tareas
+3. `GET /tareas/{id}` → Obtener tarea por ID
+4. `PUT /tareas/{id}` → Actualizar tarea completa
+5. `DELETE /tareas/{id}` → Eliminar tarea
+```
+
+-- CRUD completo para tareas --
+
+```python
+# Tu código aquí
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+app = FastAPI()
+
+class Tarea(BaseModel):
+    id: int
+    titulo: str
+    descripcion: Optional[str] = None
+    completada: bool = False
+
+tareas_db = {}
+
+@app.post("/tareas/", response_model=Tarea, status_code=201)
+def crear_tarea(tarea: Tarea):
+    if tarea.id in tareas_db:
+        raise HTTPException(status_code=400, detail="ID ya existe")
+    tareas_db[tarea.id] = tarea
+    return tarea
+
+@app.get("/tareas/", response_model=List[Tarea])
+def listar_tareas():
+    return list(tareas_db.values())
+
+@app.get("/tareas/{tarea_id}", response_model=Tarea)
+def obtener_tarea(tarea_id: int):
+    if tarea_id not in tareas_db:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    return tareas_db[tarea_id]
+
+@app.delete("/tareas/{tarea_id}", status_code=204)
+def eliminar_tarea(tarea_id: int):
+    if tarea_id not in tareas_db:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    del tareas_db[tarea_id]
+    return None
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Todos los endpoints CRUD funcionan
+- [ ] Los status codes son correctos
+- [ ] Los errores 404 se manejan apropiadamente
+- [ ] La validación de datos funciona
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué status code se usa para POST exitoso?**
+
+```markdown
+- 200 OK
+- 201 Created ✅
+- 204 No Content
+```
+
+**2. ¿Qué excepción lanza un error 404?**
+
+```markdown
+- `ValueError`
+- `HTTPException(status_code=404)` ✅
+- `NotFoundError`
+```
+
+**3. ¿Qué método HTTP actualiza parcialmente?**
+
+```markdown
+- PUT
+- PATCH ✅
+- POST
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                 | **URL**                                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **FastAPI Status Codes**    | [fastapi.tiangolo.com/advanced/response-status-code](https://fastapi.tiangolo.com/advanced/response-status-code/) |
+| **HTTPException**           | [fastapi.tiangolo.com/tutorial/handling-errors](https://fastapi.tiangolo.com/tutorial/handling-errors/)           |
+| **REST API Best Practices** | [restfulapi.net](https://restfulapi.net/)                                                                         |

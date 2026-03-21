@@ -1,0 +1,201 @@
+---
+title: "Modelos Pydantic para Validación"
+description: "Schemas, validación y serialización de datos"
+module: "apis-fastapi"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 3
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Crear modelos Pydantic personalizados
+2. ✅ Aplicar validaciones avanzadas
+3. ✅ Usar modelos para request y response
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Características de Pydantic
+
+| **Característica**  | **Descripción**              | **Beneficio**     |
+| ------------------- | ---------------------------- | ----------------- |
+| **Type Hints**      | Validación basada en tipos   | Menos errores     |
+| **Validación Auto** | Valida datos automáticamente | Código limpio     |
+| **Serialización**   | Convierte a/desde JSON       | Fácil integración |
+| **Documentación**   | Genera schemas para OpenAPI  | Docs auto         |
+
+---
+
+### Tipos de Validación
+
+| **Validación** | **Sintaxis**                    | **Ejemplo**           |
+| -------------- | ------------------------------- | --------------------- |
+| **Required**   | Sin valor por defecto           | `nombre: str`         |
+| **Optional**   | Con `Optional` o valor default  | `edad: int = 0`       |
+| **Field**      | Con `Field()` para más opciones | `Field(min_length=3)` |
+| **Validator**  | Con `@validator`                | Validación custom     |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Modelo Básico
+
+```python
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional
+from datetime import datetime
+
+class Usuario(BaseModel):
+    id: int
+    email: EmailStr
+    nombre: str = Field(min_length=3, max_length=50)
+    edad: int = Field(ge=0, le=150)
+    activo: bool = True
+    creado_en: datetime = Field(default_factory=datetime.now)
+```
+
+### Modelo con Validación Custom
+
+```python
+from pydantic import BaseModel, validator, Field
+
+class Producto(BaseModel):
+    nombre: str
+    precio: float
+    descripcion: Optional[str] = None
+
+    @validator('precio')
+    def precio_positivo(cls, v):
+        if v <= 0:
+            raise ValueError('El precio debe ser positivo')
+        return v
+
+    @validator('nombre')
+    def nombre_mayusculas(cls, v):
+        return v.title()
+```
+
+### Request vs Response Models
+
+```python
+from pydantic import BaseModel
+from datetime import datetime
+
+class ProductoCreate(BaseModel):
+    nombre: str
+    precio: float
+    descripcion: Optional[str] = None
+
+class ProductoResponse(ProductoCreate):
+    id: int
+    creado_en: datetime
+
+    class Config:
+        from_attributes = True
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Sistema de usuarios con validación
+
+Crea modelos para:
+
+```markdown
+1. `UsuarioCreate` → Datos para crear usuario
+2. `UsuarioUpdate` → Datos para actualizar (todos opcionales)
+3. `UsuarioResponse` → Datos de respuesta (incluye ID y fechas)
+```
+
+- Agrega validación custom para asegurar que el password tenga al menos una mayúscula.
+
+```python
+# Tu código aquí
+from pydantic import BaseModel, EmailStr, Field, validator
+from typing import Optional
+from datetime import datetime
+
+class UsuarioCreate(BaseModel):
+    email: EmailStr
+    nombre: str = Field(min_length=3, max_length=50)
+    password: str = Field(min_length=8)
+
+    @validator('password')
+    def password_seguro(cls, v):
+        if not any(c.isupper() for c in v):
+            raise ValueError('Debe tener al menos una mayúscula')
+        return v
+
+class UsuarioUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    nombre: Optional[str] = None
+
+class UsuarioResponse(UsuarioCreate):
+    id: int
+    creado_en: datetime
+
+    class Config:
+        from_attributes = True
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Los modelos validan tipos correctamente
+- [ ] Hay validación custom con `@validator`
+- [ ] Los modelos de response incluyen ID
+- [ ] Swagger muestra los schemas completos
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué decorator se usa para validación custom?**
+
+```markdown
+- `@check`
+- `@validator` ✅
+- `@validate`
+```
+
+**2. ¿Qué hace `Field(min_length=3)`?**
+
+```markdown
+- Valida longitud mínima ✅
+- Establece valor por defecto
+- Crea un campo opcional
+```
+
+**3. ¿Para qué sirve `from_attributes = True`?**
+
+```markdown
+- Leer datos de ORM/SQLAlchemy ✅
+- Validar emails
+- Serializar a JSON
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**             | **URL**                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| **Pydantic Docs**       | [docs.pydantic.dev](https://docs.pydantic.dev/)                                                 |
+| **FastAPI Body Fields** | [fastapi.tiangolo.com/tutorial/body-fields](https://fastapi.tiangolo.com/tutorial/body-fields/) |
+| **Pydantic Validators** | [docs.pydantic.dev/usage/validators](https://docs.pydantic.dev/usage/validators/)               |
+
+```
+
+```

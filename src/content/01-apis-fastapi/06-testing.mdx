@@ -1,0 +1,241 @@
+---
+title: "Testing de APIs con pytest"
+description: "Tests unitarios y de integración para FastAPI"
+module: "apis-fastapi"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Configurar pytest para FastAPI
+2. ✅ Escribir tests para endpoints
+3. ✅ Usar TestClient para testing
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Tests
+
+| **Tipo**        | **Propósito**                  | **Herramienta**     |
+| --------------- | ------------------------------ | ------------------- |
+| **Unit Tests**  | Testear funciones individuales | `pytest`            |
+| **Integration** | Testear endpoints completos    | `TestClient`        |
+| **E2E Tests**   | Testear flujo completo         | `pytest + requests` |
+
+---
+
+### Estructura de Tests
+
+| **Archivo**      | **Propósito**                       | **Ejemplo**          |
+| ---------------- | ----------------------------------- | -------------------- |
+| **test_main.py** | Tests de endpoints principales      | `test_read_root()`   |
+| **test_crud.py** | Tests de operaciones CRUD           | `test_create_item()` |
+| **conftest.py**  | Fixtures y configuración compartida | `@pytest.fixture`    |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Instalación
+
+```bash
+pip install pytest httpx
+```
+
+### Tests Básicos
+
+```python
+# test_main.py
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_read_root():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Hola Mundo"}
+
+def test_read_item():
+    response = client.get("/items/1")
+    assert response.status_code == 200
+    assert "item_id" in response.json()
+
+def test_create_item():
+    response = client.post("/items/", json={"nombre": "Test", "precio": 99.99})
+    assert response.status_code == 201
+    assert response.json()["nombre"] == "Test"
+```
+
+### Tests con Fixtures
+
+```python
+# conftest.py
+import pytest
+from fastapi.testclient import TestClient
+from main import app
+
+@pytest.fixture
+def client():
+    with TestClient(app) as c:
+        yield c
+
+@pytest.fixture
+def item_data():
+    return {"nombre": "Producto Test", "precio": 49.99}
+```
+
+```python
+# test_crud.py
+def test_crear_item(client, item_data):
+    response = client.post("/items/", json=item_data)
+    assert response.status_code == 201
+
+def test_leer_item(client, item_data):
+    # Primero crear
+    create_response = client.post("/items/", json=item_data)
+    item_id = create_response.json()["id"]
+
+    # Luego leer
+    read_response = client.get(f"/items/{item_id}")
+    assert read_response.status_code == 200
+    assert read_response.json()["nombre"] == item_data["nombre"]
+
+def test_eliminar_item(client, item_data):
+    # Crear
+    create_response = client.post("/items/", json=item_data)
+    item_id = create_response.json()["id"]
+
+    # Eliminar
+    delete_response = client.delete(f"/items/{item_id}")
+    assert delete_response.status_code == 204
+
+    # Verificar que no existe
+    get_response = client.get(f"/items/{item_id}")
+    assert get_response.status_code == 404
+```
+
+### Ejecutar Tests
+
+```bash
+# Ejecutar todos los tests
+pytest
+
+# Ejecutar con verbose
+pytest -v
+
+# Ejecutar con cobertura
+pytest --cov=main
+
+# Ejecutar test específico
+pytest test_main.py::test_read_root
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Tests para API de tareas
+
+Crea tests para:
+
+```markdown
+1. `test_crear_tarea()` → Verifica creación
+2. `test_leer_tarea()` → Verifica lectura
+3. `test_actualizar_tarea()` → Verifica actualización
+4. `test_eliminar_tarea()` → Verifica eliminación
+5. `test_tarea_no_existe()` → Verifica 404
+```
+
+-- Usa `TestClient` y `pytest`:
+
+```python
+# test_tareas.py
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_crear_tarea():
+    response = client.post("/tareas/", json={
+        "id": 1,
+        "titulo": "Test",
+        "descripcion": "Tarea de prueba"
+    })
+    assert response.status_code == 201
+    assert response.json()["titulo"] == "Test"
+
+def test_leer_tarea():
+    # Crear primero
+    client.post("/tareas/", json={"id": 1, "titulo": "Test", "descripcion": "Test"})
+
+    # Leer
+    response = client.get("/tareas/1")
+    assert response.status_code == 200
+    assert response.json()["titulo"] == "Test"
+
+def test_tarea_no_existe():
+    response = client.get("/tareas/999")
+    assert response.status_code == 404
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Todos los tests pasan (verde)
+- [ ] Hay tests para cada endpoint CRUD
+- [ ] Se prueban casos de error (404)
+- [ ] Los tests son independientes entre sí
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué clase se usa para testear FastAPI?**
+
+```markdown
+- `TestClient` ✅
+- `APIClient`
+- `FastAPIClient`
+```
+
+**2. ¿Qué comando ejecuta pytest?**
+
+```markdown
+- `python test.py`
+- `pytest` ✅
+- `run tests`
+```
+
+**3. ¿Qué decorator define un fixture?**
+
+```markdown
+- `@test`
+- `@pytest.fixture` ✅
+- `@setup`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**         | **URL**                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| **FastAPI Testing** | [fastapi.tiangolo.com/tutorial/testing](https://fastapi.tiangolo.com/tutorial/testing/) |
+| **pytest Docs**     | [docs.pytest.org](https://docs.pytest.org/)                                             |
+| **TestClient**      | [www.starlette.io/testclient](https://www.starlette.io/testclient/)                     |
+
+```
+
+```

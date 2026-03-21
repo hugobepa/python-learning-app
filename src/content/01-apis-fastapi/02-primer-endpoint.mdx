@@ -1,0 +1,196 @@
+---
+title: "Primer Endpoint con Parámetros"
+description: "Path parameters, query parameters y request body"
+module: "apis-fastapi"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Usar path parameters correctamente
+2. ✅ Implementar query parameters
+3. ✅ Recibir datos con request body
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Parámetros en FastAPI
+
+| **Tipo**   | **Ubicación**    | **Sintaxis**         | **Ejemplo**        |
+| ---------- | ---------------- | -------------------- | ------------------ |
+| **Path**   | URL path         | `{parametro}`        | `/items/{id}`      |
+| **Query**  | URL query string | `?parametro=valor`   | `/items?skip=0`    |
+| **Body**   | Request body     | JSON en POST/PUT     | `{"name": "item"}` |
+| **Header** | HTTP headers     | `headers["X-Token"]` | Autenticación      |
+
+---
+
+### Métodos HTTP
+
+| **Método** | **Propósito**               | **Ejemplo**       |
+| ---------- | --------------------------- | ----------------- |
+| **GET**    | Obtener datos               | `GET /items`      |
+| **POST**   | Crear nuevo recurso         | `POST /items`     |
+| **PUT**    | Actualizar recurso completo | `PUT /items/1`    |
+| **DELETE** | Eliminar recurso            | `DELETE /items/1` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Path Parameters
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/usuarios/{usuario_id}")
+def leer_usuario(usuario_id: int):
+    return {"usuario_id": usuario_id}
+
+@app.get("/archivos/{ruta:path}")
+def leer_archivo(ruta: str):
+    return {"ruta": ruta}
+```
+
+### Query Parameters
+
+```python
+from fastapi import FastAPI
+from typing import Optional
+
+app = FastAPI()
+
+@app.get("/items/")
+def leer_items(skip: int = 0, limit: int = 10, q: Optional[str] = None):
+    return {"skip": skip, "limit": limit, "q": q}
+```
+
+### Request Body con Pydantic
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional
+
+app = FastAPI()
+
+class Item(BaseModel):
+    nombre: str
+    precio: float
+    descripcion: Optional[str] = None
+    impuestos: float = 0.0
+
+@app.post("/items/")
+def crear_item(item: Item):
+    return item
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** API de productos
+
+Crea una API con:
+
+```markdown
+1. `GET /productos` → Lista todos los productos
+2. `GET /productos/{id}` → Obtiene un producto por ID
+3. `POST /productos` → Crea un nuevo producto
+4. Usa Pydantic para validar el body
+```
+
+-- api.py --:
+
+```python
+# Tu código aquí
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional, List
+
+app = FastAPI()
+
+class Producto(BaseModel):
+    id: int
+    nombre: str
+    precio: float
+    descripcion: Optional[str] = None
+
+productos_db = []
+
+@app.get("/productos", response_model=List[Producto])
+def listar_productos():
+    return productos_db
+
+@app.get("/productos/{producto_id}", response_model=Producto)
+def obtener_producto(producto_id: int):
+    return {"id": producto_id, "nombre": "Producto Ejemplo", "precio": 99.99}
+
+@app.post("/productos", response_model=Producto)
+def crear_producto(producto: Producto):
+    productos_db.append(producto)
+    return producto
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Los endpoints GET funcionan con parámetros
+- [ ] POST recibe y valida JSON con Pydantic
+- [ ] La documentación Swagger muestra los schemas
+- [ ] Los tipos están correctamente definidos
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Cómo se define un path parameter?**
+
+```markdown
+- `/items/{id}` ✅
+- `/items/?id=1`
+- `/items?id=1`
+```
+
+**2. ¿Qué decorator se usa para crear recursos?**
+
+```markdown
+- `@app.get()`
+- `@app.post()` ✅
+- `@app.create()`
+```
+
+**3. ¿Qué hace Pydantic en FastAPI?**
+
+```markdown
+- Validación de datos ✅
+- Conexión a base de datos
+- Autenticación
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**              | **URL**                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| **FastAPI Path Params**  | [fastapi.tiangolo.com/tutorial/path-params](https://fastapi.tiangolo.com/tutorial/path-params/)   |
+| **FastAPI Query Params** | [fastapi.tiangolo.com/tutorial/query-params](https://fastapi.tiangolo.com/tutorial/query-params/) |
+| **Pydantic Models**      | [fastapi.tiangolo.com/tutorial/body](https://fastapi.tiangolo.com/tutorial/body/)                 |
+
+```
+
+```
