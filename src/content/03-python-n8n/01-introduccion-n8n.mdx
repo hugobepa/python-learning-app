@@ -1,0 +1,178 @@
+
+---
+title: "Introducción a n8n y Automatización"
+description: "Conceptos básicos de automatización con n8n y Python"
+module: "python-n8n"
+level: "intermediate"
+duration: "20 min"
+xp: 50
+order: 1
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Comprender qué es n8n y por qué usarlo
+2. ✅ Instalar n8n localmente o en la nube
+3. ✅ Crear tu primer workflow básico
+````
+---
+
+## 📚 Teoría Esencial
+
+### ¿Qué es n8n?
+
+| **Característica**     | **Descripción**                     | **Beneficio**       |
+| ---------------------- | ----------------------------------- | ------------------- |
+| **Workflow-based**     | Automatización visual con nodos     | Sin código complejo |
+| **Self-hostable**      | Puedes alojarlo en tu servidor      | Control total       |
+| **Python Integration** | Ejecuta código Python personalizado | Flexibilidad        |
+| **500+ Integrations**  | Conecta con APIs, DBs, servicios    | Ecosistema amplio   |
+
+---
+
+### n8n vs Otras Herramientas
+
+| **Herramienta** | **Precio**  | **Self-host** | **Python**  | **Curva** |
+| --------------- | ----------- | ------------- | ----------- | --------- |
+| **n8n**         | Gratis/Fair | ✅ Sí         | ✅ Sí       | Baja      |
+| **Zapier**      | $$/mes      | ❌ No         | ❌ Limitado | Baja      |
+| **Make**        | $$/mes      | ❌ No         | ⚠️ Parcial  | Media     |
+| **Airflow**     | Gratis      | ✅ Sí         | ✅ Sí       | Alta      |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Instalación de n8n
+
+```bash
+# Opción 1: npm (recomendado para desarrollo)
+npm install n8n -g
+n8n start
+
+# Opción 2: Docker
+docker run -it --rm --name n8n -p 5678:5678 n8nio/n8n
+
+# Opción 3: n8n Cloud (sin instalación)
+# https://n8n.io/cloud
+```
+
+
+### Primer Workflow Básico
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [250, 300]
+    },
+    {
+      "name": "Python Code",
+      "type": "n8n-nodes-base.python",
+      "position": [450, 300],
+      "parameters": {
+        "code": "return [{\"json\": {\"message\": \"Hola desde Python!\"}}]"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [[{ "node": "Python Code", "type": "main", "index": 0 }]]
+    }
+  }
+}
+```
+
+### Acceder a n8n
+
+```bash
+# Después de iniciar n8n
+# Abre en navegador: http://localhost:5678
+
+# Credenciales por defecto:
+# - Email: tu@email.com
+# - Password: tu_contraseña
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea tu primer workflow en n8n
+````markdown
+1. Instala n8n localmente o usa n8n Cloud
+2. Crea un nuevo workflow
+3. Añade un nodo "Manual Trigger"
+4. Añade un nodo "Code" con Python
+5. Ejecuta el workflow y verifica el output
+````
+
+-- python en nodo Code de n8n:
+```python
+# Tu código aquí (nodo Code de n8n)
+items = []
+for i in range(3):
+    items.append({
+        "json": {
+            "id": i + 1,
+            "message": f"Mensaje número {i + 1}",
+            "timestamp": "2026-03-21"
+        }
+    })
+return items
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] n8n está instalado y corriendo
+- [ ] Puedes acceder a http://localhost:5678
+- [ ] El workflow se ejecuta sin errores
+- [ ] El output muestra los 3 mensajes
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué comando inicia n8n localmente?**
+
+```markdown
+- `n8n run`
+- `n8n start` ✅
+- `npm run n8n`
+```
+
+**2. ¿En qué puerto corre n8n por defecto?**
+
+```markdown
+- `3000`
+- `5678` ✅
+- `8080`
+```
+
+**3. ¿Qué tipo de nodo ejecuta Python en n8n?**
+
+```markdown
+- `Python Script`
+- `Code` ✅
+- `Execute Command`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                | **URL**                                                |
+| -------------------------- | ------------------------------------------------------ |
+| **n8n Official Docs**      | [docs.n8n.io](https://docs.n8n.io/)                    |
+| **n8n GitHub**             | [github.com/n8n-io/n8n](https://github.com/n8n-io/n8n) |
+| **n8n Workflow Templates** | [n8n.io/workflows](https://n8n.io/workflows)           |
+
+

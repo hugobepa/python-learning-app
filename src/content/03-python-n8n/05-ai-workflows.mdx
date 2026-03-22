@@ -1,0 +1,225 @@
+
+---
+title: "AI Workflows con n8n y Python"
+description: "Integrar modelos de IA en automatizaciones"
+module: "python-n8n"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 5
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar nodos de IA en n8n
+2. ✅ Integrar APIs de IA (OpenAI, Anthropic, etc.)
+3. ✅ Crear workflows inteligentes con Python
+````
+---
+
+## 📚 Teoría Esencial
+
+### APIs de IA Populares
+
+| **Proveedor**          | **Modelos**                              | **Uso** |
+| ---------------------- | ---------------------------------------- | ------- |
+| **OpenAI**             | GPT-4, GPT-3.5, DALL-E                   | Texto, imágenes |
+| **Anthropic**          | Claude 3, Claude 2                       | Texto avanzado |
+| **Google AI**          | Gemini Pro, PaLM                         | Multimodal |
+| **Hugging Face**       | Modelos open-source                      | Diversos |
+
+---
+
+### Casos de Uso de IA en Automatización
+
+| **Caso**               | **Descripción**                          | **Ejemplo** |
+| ---------------------- | ---------------------------------------- | ----------- |
+| **Procesamiento de Texto** | Resumir, clasificar, traducir        | Emails, documentos |
+| **Análisis de Sentimiento** | Detectar tono emocional             | Reviews, soporte |
+| **Generación de Contenido** | Crear texto automático              | Blogs, respuestas |
+| **Extracción de Datos** | Parsear información estructurada       | Facturas, forms |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Configurar OpenAI en n8n
+
+```bash
+# 1. Obtén API Key de OpenAI
+# https://platform.openai.com/api-keys
+
+# 2. En n8n, ve a Credentials
+# 3. Add Credential → OpenAI API
+# 4. Ingresa tu API Key
+# 5. Guarda y asigna al nodo OpenAI
+```
+
+### Workflow de Resumen de Texto
+
+```json
+{
+  "nodes": [
+    {
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "parameters": {
+        "operation": "text",
+        "model": "gpt-3.5-turbo",
+        "prompt": "Resume el siguiente texto en 3 puntos clave:\n\n{{ $json.texto }}",
+        "maxTokens": 500
+      }
+    }
+  ]
+}
+```
+
+### Procesar con Python + IA
+
+```python
+# Procesar respuesta de OpenAI en n8n
+import json
+
+# Obtener respuesta de IA
+respuesta = items[0]['json'].get('output', '')
+
+# Extraer puntos clave
+puntos = []
+for linea in respuesta.split('\n'):
+    if linea.strip().startswith(('1.', '2.', '3.', '-')):
+        puntos.append(linea.strip())
+
+# Retornar formato estructurado
+return [{
+    "json": {
+        "resumen": respuesta,
+        "puntos_clave": puntos,
+        "longitud": len(respuesta),
+        "procesado": True
+    }
+}]
+```
+
+### Workflow de Clasificación de Emails
+
+```python
+# Clasificar emails con IA
+import json
+
+prompt = f"""
+Clasifica este email en una categoría:
+- ventas
+- soporte
+- reclamacion
+- otro
+
+Email: {items[0]['json'].get('contenido', '')}
+
+Responde solo con la categoría.
+"""
+
+# En n8n, esto iría en nodo OpenAI
+# La respuesta se procesa aquí
+categoria = items[0]['json'].get('ia_respuesta', 'otro').strip().lower()
+
+return [{
+    "json": {
+        "email_original": items[0]['json'],
+        "categoria": categoria,
+        "prioridad": "alta" if categoria == "reclamacion" else "normal",
+        "timestamp": "2026-03-21"
+    }
+}]
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea un workflow de análisis de sentimiento
+````markdown
+1. Configura credenciales de OpenAI en n8n
+2. Crea webhook para recibir textos
+3. Añade nodo OpenAI para análisis
+4. Procesa respuesta con Python
+5. Retorna sentimiento y puntuación
+````
+
+-- nodo Code de n8n --
+```python
+# Tu código aquí (nodo Code de n8n)
+import json
+
+# Obtener respuesta de IA
+respuesta_ia = items[0]['json'].get('output', '')
+
+# Parsear sentimiento
+sentimiento_map = {
+    "positivo": "😊",
+    "negativo": "😞",
+    "neutral": "😐"
+}
+
+# Extraer sentimiento (asumiendo formato de IA)
+sentimiento = "neutral"
+if "positivo" in respuesta_ia.lower():
+    sentimiento = "positivo"
+elif "negativo" in respuesta_ia.lower():
+    sentimiento = "negativo"
+
+return [{
+    "json": {
+        "texto_original": items[0]['json'].get('texto', ''),
+        "sentimiento": sentimiento,
+        "emoji": sentimiento_map.get(sentimiento, "😐"),
+        "analisis": respuesta_ia,
+        "procesado": True
+    }
+}]
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] Las credenciales de IA están configuradas
+- [ ] El workflow llama a la API de IA
+- [ ] La respuesta se procesa con Python
+- [ ] El output está estructurado correctamente
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué nodo se usa para OpenAI en n8n?**
+````markdown
+- `AI Node`
+- `OpenAI` ✅
+- `Language Model`
+````
+**2. ¿Dónde se configura la API Key?**
+````markdown
+- En el workflow
+- En Credentials ✅
+- En settings.json
+````
+
+**3. ¿Cómo se accede a la respuesta de IA en Python?**
+````markdown
+- `items[0]['json'].get('output')` ✅
+- `response.data`
+- `ai.result`
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **n8n LangChain Nodes**        | [docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain/) |
+| **OpenAI API Docs**            | [platform.openai.com/docs](https://platform.openai.com/docs) |
+| **LangChain**                  | [python.langchain.com](https://python.langchain.com/) |
+| **n8n AI Templates**           | [n8n.io/workflows?categories=ai](https://n8n.io/workflows?categories=ai) |
+

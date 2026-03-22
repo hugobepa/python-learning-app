@@ -1,0 +1,197 @@
+---
+title: "Webhooks y HTTP Requests"
+description: "Conectar APIs externas con n8n mediante webhooks"
+module: "python-n8n"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+```markdown
+1. ✅ Configurar webhooks para recibir datos externos
+2. ✅ Usar el nodo HTTP Request para consumir APIs
+3. ✅ Procesar respuestas JSON con Python
+```
+
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Webhooks en n8n
+
+| **Tipo**     | **Descripción**                   | **Cuándo Usar**              |
+| ------------ | --------------------------------- | ---------------------------- |
+| **Webhook**  | Recibe peticiones HTTP externas   | Integraciones en tiempo real |
+| **Schedule** | Ejecuta en intervalos programados | Tareas periódicas            |
+| **Manual**   | Ejecución manual desde la UI      | Testing y desarrollo         |
+
+---
+
+### Métodos HTTP Comunes
+
+| **Método** | **Propósito**               | **Ejemplo**           |
+| ---------- | --------------------------- | --------------------- |
+| **GET**    | Obtener datos               | `GET /api/users`      |
+| **POST**   | Crear nuevo recurso         | `POST /api/users`     |
+| **PUT**    | Actualizar recurso completo | `PUT /api/users/1`    |
+| **DELETE** | Eliminar recurso            | `DELETE /api/users/1` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Configurar Webhook en n8n
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mi-webhook",
+        "responseMode": "lastNode"
+      }
+    },
+    {
+      "name": "Python Code",
+      "type": "n8n-nodes-base.python",
+      "parameters": {
+        "code": "data = items[0]['json']\nreturn [{\"json\": {\"mensaje\": f\"Recibido: {data}\"}}]"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Python Code", "type": "main", "index": 0 }]]
+    }
+  }
+}
+```
+
+### HTTP Request a API Externa
+
+```json
+{
+  "nodes": [
+    {
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.example.com/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      }
+    }
+  ]
+}
+```
+
+### Probar Webhook
+
+```bash
+# 1. Inicia el workflow en n8n (Listen for test event)
+# 2. Envía petición desde terminal:
+curl -X POST http://localhost:5678/webhook/mi-webhook \
+  -H "Content-Type: application/json" \
+  -d '{"nombre": "Hugo", "email": "hugo@ejemplo.com"}'
+
+# 3. Verifica el output en n8n
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea un webhook que procese datos de usuario
+
+```markdown
+1. Crea un nuevo workflow en n8n
+2. Añade nodo Webhook (método POST)
+3. Añade nodo Code con Python para procesar datos
+4. Añade nodo HTTP Request para enviar a otra API
+5. Prueba con curl o Postman
+```
+
+-- código Python en nodo Code de n8n:
+
+```python
+# Tu código aquí (nodo Code de n8n)
+import json
+
+# Obtener datos del webhook
+data = items[0]['json']
+
+# Procesar datos
+nombre = data.get('nombre', 'Desconocido')
+email = data.get('email', '')
+
+# Validar email
+if '@' not in email:
+    return [{"json": {"error": "Email inválido"}}]
+
+# Retornar respuesta
+return [{
+    "json": {
+        "status": "success",
+        "mensaje": f"Usuario {nombre} registrado",
+        "email": email.lower()
+    }
+}]
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] El webhook recibe peticiones POST
+- [ ] Los datos se procesan con Python
+- [ ] La respuesta JSON es correcta
+- [ ] Puedes ver los logs en n8n
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué nodo recibe peticiones HTTP en n8n?**
+
+```markdown
+- `HTTP Receiver`
+- `Webhook` ✅
+- `API Trigger`
+```
+
+**2. ¿Qué método HTTP se usa para crear recursos?**
+
+```markdown
+- `GET`
+- `POST` ✅
+- `DELETE`
+```
+
+**3. ¿Cómo se accede a los datos del webhook en Python?**
+
+```markdown
+- `items[0]['json']` ✅
+- `request.data`
+- `webhook.payload`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**          | **URL**                                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **n8n Webhook Node** | [docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/)         |
+| **n8n HTTP Request** | [docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/) |
+| **Postman**          | [postman.com](https://www.postman.com/)                                                                                                                   |

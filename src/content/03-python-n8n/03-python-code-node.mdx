@@ -1,0 +1,243 @@
+
+---
+title: "Python Code Node Avanzado"
+description: "Ejecutar código Python personalizado en workflows de n8n"
+module: "python-n8n"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 3
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Usar el nodo Code de n8n para ejecutar Python
+2. ✅ Manipular datos de entrada y salida
+3. ✅ Importar librerías externas en tus scripts
+````
+---
+
+## 📚 Teoría Esencial
+
+### El Nodo Code en n8n
+
+| **Característica**     | **Descripción**                          | **Beneficio** |
+| ---------------------- | ---------------------------------------- | ------------- |
+| **Python 3.10+**       | Versión moderna de Python                | Sintaxis actualizada |
+| **Sandbox Seguro**     | Ejecución aislada                        | Seguridad |
+| **Librerías Built-in** | Módulos estándar disponibles             | Sin instalación |
+| **Input/Output**       | Formato JSON estandarizado               | Integración fácil |
+
+---
+
+### Librerías Disponibles
+
+| **Categoría**          | **Librerías**                            | **Uso** |
+| ---------------------- | ---------------------------------------- | ------- |
+| **Built-in**           | `json`, `datetime`, `re`, `math`         | Siempre disponibles |
+| **External**           | `requests`, `pandas`, `numpy`            | Requieren configuración |
+| **Custom**             | Tus propios módulos                      | Reutilización |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Estructura Básica del Nodo Code
+
+```python
+# n8n proporciona 'items' como entrada
+# Cada item tiene estructura: {"json": {...}}
+
+# Ejemplo básico
+output = []
+for item in items:
+    data = item['json']
+    output.append({
+        "json": {
+            "procesado": True,
+            "original": data,
+            "timestamp": "2026-03-21"
+        }
+    })
+return output
+```
+
+### Transformar Datos con Python
+
+```python
+# Procesar lista de usuarios
+users = items[0]['json'].get('users', [])
+
+processed = []
+for user in users:
+    processed.append({
+        "json": {
+            "id": user.get('id'),
+            "nombre": user.get('nombre', '').upper(),
+            "email": user.get('email', '').lower(),
+            "activo": user.get('activo', False)
+        }
+    })
+
+return processed
+```
+
+### Usar Librerías Externas
+
+```python
+import json
+import re
+from datetime import datetime
+
+# Validar email con regex
+def validar_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return bool(re.match(pattern, email))
+
+# Procesar items
+output = []
+for item in items:
+    data = item['json']
+    email_valido = validar_email(data.get('email', ''))
+    
+    output.append({
+        "json": {
+            **data,
+            "email_valido": email_valido,
+            "procesado_en": datetime.now().isoformat()
+        }
+    })
+
+return output
+```
+
+### Manejo de Errores
+
+```python
+try:
+    # Procesar datos
+    data = items[0]['json']
+    resultado = data['valor'] / data['divisor']
+    
+    return [{
+        "json": {
+            "resultado": resultado,
+            "estado": "success"
+        }
+    }]
+except ZeroDivisionError:
+    return [{
+        "json": {
+            "error": "División por cero",
+            "estado": "failed"
+        }
+    }]
+except KeyError as e:
+    return [{
+        "json": {
+            "error": f"Campo faltante: {e}",
+            "estado": "failed"
+        }
+    }]
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Procesador de datos de API
+
+Crea un workflow que:
+````markdown
+1. Reciba datos de un webhook
+2. Use nodo Code para validar y transformar
+3. Filtre registros inválidos
+4. Retorne datos procesados en formato estándar
+````
+
+-- **Input Ejemplo:**
+```json
+{
+  "users": [
+    {"id": 1, "nombre": "Alice", "email": "
+```python
+# Tu código aquí (nodo Code de n8n)
+import json
+from datetime import datetime
+
+def procesar_usuario(user):
+    """Valida y transforma un usuario."""
+    # Validaciones
+    if not user.get('nombre'):
+        return None
+    if not user.get('email') or '@' not in user['email']:
+        return None
+    if user.get('edad', 0) < 18:
+        return None
+    
+    # Transformación
+    return {
+        "json": {
+            "id": user.get('id'),
+            "nombre": user['nombre'].strip().title(),
+            "email": user['email'].strip().lower(),
+            "edad": int(user['edad']),
+            "procesado": True,
+            "fecha_procesamiento": datetime.now().isoformat()
+        }
+    }
+
+# Procesar todos los items
+output = []
+for item in items:
+    user = item['json']
+    procesado = procesar_usuario(user)
+    if procesado:
+        output.append(procesado)
+
+return output
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El nodo Code ejecuta sin errores
+- [ ] Los datos se validan correctamente
+- [ ] Los registros inválidos se filtran
+- [ ] El output tiene formato JSON estándar
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Cómo se accede a los datos de entrada en n8n Code node?**
+````markdown
+- `input.data`
+- `items[0]['json']` ✅
+- `request.body`
+````
+**2. ¿Qué librerías están disponibles por defecto?**
+````markdown
+- Solo librerías built-in de Python ✅
+- Todas las librerías de PyPI
+- Ninguna librería
+````
+**3. ¿Cómo se retorna el output en n8n?**
+````markdown
+- `print()`
+- `return output` ✅
+- `response.send()`
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **n8n Code Node Docs**         | [docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code/) |
+| **Python Standard Library**    | [docs.python.org/3/library](https://docs.python.org/3/library/) |
+| **n8n Community Nodes**        | [n8n.io/integrations](https://n8n.io/integrations/) |
+```

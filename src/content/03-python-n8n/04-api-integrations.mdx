@@ -1,0 +1,238 @@
+---
+title: "Integración con APIs Externas"
+description: "Conectar y consumir APIs REST con n8n y Python"
+module: "python-n8n"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar credenciales para APIs externas
+2. ✅ Consumir APIs REST con HTTP Request node
+3. ✅ Procesar respuestas JSON con Python
+````
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Autenticación en APIs
+
+| **Tipo**         | **Descripción**                   | **Ejemplo**            |
+| ---------------- | --------------------------------- | ---------------------- |
+| **API Key**      | Clave en header o query           | `X-API-Key: tu_key`    |
+| **Bearer Token** | Token JWT en Authorization header | `Bearer <token>`       |
+| **OAuth2**       | Flujo de autorización completo    | Google, GitHub         |
+| **Basic Auth**   | Usuario y contraseña en base64    | `Authorization: Basic` |
+
+---
+
+### APIs Populares para Integrar
+
+| **API**           | **Propósito**                  | **Auth** |
+| ----------------- | ------------------------------ | -------- |
+| **OpenWeather**   | Datos del clima                | API Key  |
+| **GitHub**        | Repositorios, issues, PRs      | OAuth2   |
+| **Slack**         | Mensajes y notificaciones      | OAuth2   |
+| **Google Sheets** | Leer/escribir hojas de cálculo | OAuth2   |
+| **SendGrid**      | Envío de emails                | API Key  |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Configurar Credenciales en n8n
+
+```bash
+# 1. Ve a Credentials en n8n
+# 2. Click en "Add Credential"
+# 3. Selecciona el tipo (HTTP Header Auth, OAuth2, etc.)
+# 4. Ingresa tus credenciales
+# 5. Guarda y asigna al nodo HTTP Request
+```
+
+### HTTP Request a API con Auth
+
+```json
+{
+  "nodes": [
+    {
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "Madrid" },
+            { "name": "appid", "value": "{{ $credentials.apiKey }}" }
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+### Procesar Respuesta con Python
+
+```python
+# Procesar respuesta de API del clima
+import json
+
+data = items[0]['json']
+
+# Extraer datos relevantes
+temperatura = data.get('main', {}).get('temp', 0) - 273.15  # Kelvin a Celsius
+ciudad = data.get('name', 'Desconocida')
+descripcion = data.get('weather', [{}])[0].get('description', '')
+
+# Retornar formato personalizado
+return [{
+    "json": {
+        "ciudad": ciudad,
+        "temperatura_celsius": round(temperatura, 2),
+        "condicion": descripcion,
+        "timestamp": "2026-03-21"
+    }
+}]
+```
+
+### API con Paginación
+
+```python
+# Manejar paginación de API
+import requests
+
+all_items = []
+page = 1
+
+while True:
+    response = requests.get(
+        f"https://api.example.com/items",
+        params={"page": page, "limit": 100},
+        headers={"Authorization": "Bearer token"}
+    )
+
+    data = response.json()
+    all_items.extend(data.get('items', []))
+
+    if not data.get('has_more'):
+        break
+    page += 1
+
+return [{"json": {"total": len(all_items), "items": all_items}}]
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Integración con API de GitHub
+
+Crea un workflow que:
+
+```markdown
+1. Configure credenciales de GitHub (OAuth2 o token)
+2. Obtenga tus repositorios mediante API
+3. Procese los datos con Python
+4. Filtre repositorios por lenguaje
+5. Retorne lista formateada
+```
+
+-- fichero n8n HTTP Request --
+
+````json
+{
+  "method": "GET",
+  "url": "https://api.github.com/user/repos",
+  "authentication": "genericCredentialType",
+  "genericAuthType": "httpHeaderAuth",
+  "sendQuery": false
+}
+```python
+# Tu código aquí (nodo Code de n8n)
+import json
+
+# Obtener respuesta de GitHub API
+repos = items[0]['json']
+
+# Filtrar y procesar
+python_repos = []
+for repo in repos:
+    if repo.get('language') == 'Python':
+        python_repos.append({
+            "nombre": repo.get('name'),
+            "descripcion": repo.get('description', 'Sin descripción'),
+            "stars": repo.get('stargazers_count', 0),
+            "forks": repo.get('forks_count', 0),
+            "url": repo.get('html_url')
+        })
+
+# Ordenar por stars
+python_repos.sort(key=lambda x: x['stars'], reverse=True)
+
+return [{"json": {
+    "total_python_repos": len(python_repos),
+    "repos": python_repos[:10]  # Top 10
+}}]
+````
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Las credenciales están configuradas en n8n
+- [ ] La API responde correctamente (status 200)
+- [ ] Los datos se procesan con Python
+- [ ] El output está formateado correctamente
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Dónde se configuran las credenciales en n8n?**
+
+```markdown
+- En el workflow
+- En la sección Credentials ✅
+- En settings.json
+```
+
+**2. ¿Qué header se usa para Bearer Token?**
+
+```markdown
+- `X-API-Key`
+- `Authorization: Bearer <token>` ✅
+- `Content-Type: Bearer`
+```
+
+**3. ¿Cómo se accede a credenciales en expresiones n8n?**
+
+```markdown
+- `$credentials.apiKey` ✅
+- `env.API_KEY`
+- `secrets.apiKey`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**               | **URL**                                                                                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **n8n HTTP Request Node** | [docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/) |
+| **GitHub API Docs**       | [docs.github.com/en/rest](https://docs.github.com/en/rest)                                                                                                |
+| **OpenWeather API**       | [openweathermap.org/api](https://openweathermap.org/api)                                                                                                  |
+| **Postman API Network**   | [postman.com/api-network](https://www.postman.com/api-network/)                                                                                           |
+
+

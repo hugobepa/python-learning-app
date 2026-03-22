@@ -1,0 +1,241 @@
+
+---
+title: "Deploy de Workflows a Producción"
+description: "Desplegar y monitorear workflows n8n en producción"
+module: "python-n8n"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar n8n para producción
+2. ✅ Exportar e importar workflows entre entornos
+3. ✅ Monitorear y mantener workflows en producción
+````
+---
+
+## 📚 Teoría Esencial
+
+### Entornos de n8n
+
+| **Entorno**            | **Propósito**                          | **Configuración** |
+| ---------------------- | -------------------------------------- | ----------------- |
+| **Development**        | Desarrollo y testing                   | Local, n8n start |
+| **Staging**            | Pre-producción, validación             | Server dedicado |
+| **Production**         | Producción real                        | Cluster, backup |
+
+---
+
+### Opciones de Deploy de n8n
+
+| **Opción**             | **Descripción**                          | **Costo** |
+| ---------------------- | ---------------------------------------- | --------- |
+| **n8n Cloud**          | Hosting gestionado por n8n               | $$/mes |
+| **Self-hosted Docker** | Contenedor Docker propio                 | Gratis |
+| **n8n Desktop**        | Aplicación de escritorio                 | Gratis |
+| **npm Global**         | Instalación vía npm                      | Gratis |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Deploy con Docker Compose
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_production
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=mi-n8n.dominio.com
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://mi-n8n.dominio.com/
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - n8n_network
+
+  postgres:
+    image: postgres:15
+    container_name: n8n_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=n8n
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=n8n
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n_network
+
+volumes:
+  n8n_data:
+  postgres_data:
+
+networks:
+  n8n_network:
+```
+
+### Exportar/Importar Workflows
+
+```bash
+# Exportar workflow desde n8n UI
+# 1. Abre el workflow en n8n
+# 2. Click en los 3 puntos (⋮)
+# 3. Selecciona "Download"
+# 4. Guarda el archivo .json
+
+# Importar workflow en otro entorno
+# 1. Ve a Workflows en n8n
+# 2. Click en "Add workflow"
+# 3. Click en los 3 puntos (⋮)
+# 4. Selecciona "Import from File"
+# 5. Sube el archivo .json
+```
+
+### Variables de Entorno para Producción
+
+```bash
+# .env file (NO subir a Git)
+# Configuración de n8n
+N8N_HOST=mi-n8n.dominio.com
+N8N_PORT=5678
+N8N_PROTOCOL=https
+WEBHOOK_URL=https://mi-n8n.dominio.com/
+
+# Base de datos
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=postgres
+DB_POSTGRESDB_PORT=5432
+DB_POSTGRESDB_DATABASE=n8n
+DB_POSTGRESDB_USER=n8n
+DB_POSTGRESDB_PASSWORD=contraseña_segura_aqui
+
+# Seguridad
+N8N_ENCRYPTION_KEY=tu_clave_de_encriptacion_segura
+JWT_SECRET=tu_secreto_jwt_seguro
+
+# Email (para notificaciones)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu@email.com
+SMTP_PASS=tu_password_app
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura n8n para producción
+````markdown
+1. Crea `docker-compose.yml` para n8n + PostgreSQL
+2. Configura variables de entorno en `.env`
+3. Exporta un workflow de desarrollo
+4. Impórtalo en el entorno de producción
+5. Verifica que los webhooks funcionan
+````
+
+-- comandos  para deploy --
+```yaml
+# Tu código aquí
+# docker-compose.yml
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - DB_TYPE=sqlite
+      - NODE_ENV=production
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+```
+
+```bash
+# Comandos para deploy
+# 1. Crear archivo .env
+echo "N8N_ENCRYPTION_KEY=$(openssl rand -hex 32)" > .env
+
+# 2. Iniciar n8n con Docker
+docker-compose up -d
+
+# 3. Verificar logs
+docker-compose logs -f n8n
+
+# 4. Acceder a n8n
+# http://localhost:5678
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] n8n corre en contenedor Docker
+- [ ] La base de datos está configurada
+- [ ] Los workflows se pueden exportar/importar
+- [ ] Los webhooks responden correctamente
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué comando inicia n8n con Docker Compose?**
+````markdown
+- `docker start n8n`
+- `docker-compose up -d` ✅
+- `n8n start`
+````
+**2. ¿Qué variable define la URL de webhooks?**
+````markdown
+- `N8N_HOST`
+- `WEBHOOK_URL` ✅
+- `N8N_WEBHOOK`
+````
+**3. ¿Cómo se exportan workflows en n8n?**
+````markdown
+- API REST
+- Download desde UI ✅
+- Comando CLI
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **n8n Production Setup**       | [docs.n8n.io/hosting/installation/docker](https://docs.n8n.io/hosting/installation/docker/) |
+| **n8n Environment Variables**  | [docs.n8n.io/hosting/environment-variables](https://docs.n8n.io/hosting/environment-variables/) |
+| **n8n Backup & Restore**       | [docs.n8n.io/hosting/backup-restore](https://docs.n8n.io/hosting/backup-restore/) |
+| **Docker Compose Docs**        | [docs.docker.com/compose](https://docs.docker.com/compose/) |
+
