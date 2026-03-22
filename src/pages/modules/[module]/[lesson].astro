@@ -18,6 +18,8 @@ export async function getStaticPaths() {
 
 const { module, lesson } = Astro.params as { module: string; lesson: string };
 
+const base = import.meta.env.BASE_URL || '/';
+
 // Build a map of available MDX lesson files under /src/content using an eager glob import.
 const mdxFiles = import.meta.glob('/src/content/**/*.mdx', { eager: true }) as Record<string, any>;
 
@@ -58,20 +60,20 @@ const prevLesson = lessonNum > 1 ? (lessonNum - 1).toString() : null;
 let nextHref: string;
 let nextLabel: string;
 if (lessonNum < TOTAL_LESSONS) {
-  nextHref = `/modules/${module}/${lessonNum + 1}`;
+  nextHref = `${base}modules/${module}/${lessonNum + 1}`;
   nextLabel = 'Siguiente →';
 } else if (moduleIndex >= 0 && moduleIndex < moduleOrder.length - 1) {
-  nextHref = `/modules/${moduleOrder[moduleIndex + 1]}/1`;
+  nextHref = `${base}modules/${moduleOrder[moduleIndex + 1]}/1`;
   nextLabel = 'Siguiente módulo →';
 } else {
-  nextHref = '/dashboard';
+  nextHref = `${base}dashboard`;
   nextLabel = 'Ir al dashboard →';
 }
 ---
 
 <BaseLayout title={data.title} description="Lección del curso">
   <div id="lesson-top" class="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
-    <a href={`/modules/${module}`} class="text-blue-600 hover:underline mb-4 inline-block text-sm sm:text-base">← Volver al módulo</a>
+    <a href={`${base}modules/${module}`} class="text-blue-600 hover:underline mb-4 inline-block text-sm sm:text-base">← Volver al módulo</a>
 
     <h1 class="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 leading-snug">{data.title}</h1>
 
@@ -84,13 +86,13 @@ if (lessonNum < TOTAL_LESSONS) {
       {Array.from({ length: TOTAL_LESSONS }, (_, i) => i + 1).map((n) => (
         n === lessonNum
           ? <span class="w-9 h-9 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-sm" aria-current="page">{n}</span>
-          : <a href={`/modules/${module}/${n}`} class="w-9 h-9 flex items-center justify-center rounded-full border-2 border-gray-200 text-gray-600 font-medium text-sm hover:border-blue-500 hover:text-blue-600 transition">{n}</a>
+          : <a href={`${base}modules/${module}/${n}`} class="w-9 h-9 flex items-center justify-center rounded-full border-2 border-gray-200 text-gray-600 font-medium text-sm hover:border-blue-500 hover:text-blue-600 transition">{n}</a>
       ))}
     </nav>
 
     <div class="mt-4 pt-6 sm:pt-8 border-t flex justify-between items-center gap-4 text-sm sm:text-base">
       {prevLesson
-        ? <a href={`/modules/${module}/${prevLesson}`} class="text-gray-600 hover:text-gray-900">← Anterior</a>
+        ? <a href={`${base}modules/${module}/${prevLesson}`} class="text-gray-600 hover:text-gray-900">← Anterior</a>
         : <span class="text-gray-300 select-none" aria-hidden="true">← Anterior</span>
       }
       <a href={nextHref} class="text-blue-600 hover:text-blue-800 ml-auto">{nextLabel}</a>
