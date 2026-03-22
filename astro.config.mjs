@@ -1,12 +1,12 @@
-import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
-import tailwind from '@astrojs/tailwind';
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import tailwind from '@astrojs/tailwind';
+import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://hugobepa.github.io',
-  base: '/',
+  site: 'https://hugobepa.github.io/python-learning-app',
+  base: '/python-learning-app/',
   integrations: [
     react(),
     mdx(),
