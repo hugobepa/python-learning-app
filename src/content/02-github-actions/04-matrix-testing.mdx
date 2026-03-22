@@ -1,0 +1,272 @@
+
+---
+title: "Matrix Testing para Múltiples Versiones"
+description: "Ejecutar tests en varias versiones de Python y sistemas operativos"
+module: "github-actions"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar matrix strategy para múltiples versiones
+2. ✅ Ejecutar tests en diferentes sistemas operativos
+3. ✅ Optimizar workflows con condiciones y fail-fast
+````
+---
+
+## 📚 Teoría Esencial
+
+### ¿Qué es Matrix Testing?
+
+| **Concepto**           | **Descripción**                            | **Beneficio**    |
+| ---------------------- | ------------------------------------------ | ---------------- |
+| **Matrix Strategy**    | Ejecutar jobs con diferentes combinaciones | Cobertura amplia |
+| **Parallel Execution** | Jobs se ejecutan en paralelo               | Más rápido       |
+| **Fail-Fast**          | Detener si una combinación falla           | Ahorra recursos  |
+
+---
+
+### Combinaciones Comunes de Matrix
+
+| **Dimensión**      | **Valores**                                       | **Cuándo Usar**          |
+| ------------------ | ------------------------------------------------- | ------------------------ |
+| **Python Version** | `3.9`, `3.10`, `3.11`, `3.12`                     | Librerías Python         |
+| **OS**             | `ubuntu-latest`, `windows-latest`, `macos-latest` | Software multiplataforma |
+| **Node Version**   | `16`, `18`, `20`                                  | Proyectos con frontend   |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Matrix Básico - Versiones de Python
+
+```yaml
+# .github/workflows/matrix-test.yml
+name: Matrix Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Test result
+        run: echo "Tests passed on Python ${{ matrix.python-version }}"
+```
+
+
+### Matrix Avanzado - Python + OS
+
+```yaml
+# .github/workflows/matrix-advanced.yml
+name: Advanced Matrix
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+        exclude:
+          - os: windows-latest
+            python-version: "3.10"
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+            coverage: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Coverage (only on Ubuntu 3.12)
+        if: matrix.coverage == true
+        run: pytest --cov=src
+```
+
+### Matrix con Condiciones
+
+```yaml
+# .github/workflows/matrix-conditional.yml
+name: Conditional Matrix
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Deploy (only on main + Python 3.12)
+        if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+        run: echo "Deploying to production..."
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura matrix testing para tu proyecto
+````markdown
+1. Crea `.github/workflows/matrix-test.yml`
+2. Configura matrix para Python 3.10, 3.11, 3.12
+3. Ejecuta en ubuntu-latest
+4. Añade un step que muestre la versión de Python
+5. Verifica los jobs en GitHub Actions
+````
+
+-- archivo test python: 
+```yaml
+
+name: Python Matrix Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Show Python version
+        run: python --version
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] El matrix ejecuta 3 jobs (uno por versión de Python)
+- [ ] Todos los jobs se ejecutan en paralelo
+- [ ] Puedes ver cada job en la pestaña Actions
+- [ ] Los tests pasan en todas las versiones
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué keyword define un matrix en GitHub Actions?**
+
+```markdown
+- `matrix:` ✅
+- `multi-version:`
+- `strategy:`
+```
+
+**2. ¿Qué hace `fail-fast: false`?**
+
+```markdown
+- Detiene todos los jobs si uno falla
+- Continúa ejecutando todos los jobs aunque uno falle ✅
+- Ignora los errores
+```
+
+**3. ¿Cómo se accede a un valor del matrix?**
+
+```markdown
+- `${{ matrix.python-version }}` ✅
+- `$matrix.python-version`
+- `{{ matrix.python-version }}`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                   | **URL**                                                                                                                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Matrix Strategy**    | [docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)           |
+| **Workflow Syntax**           | [docs.github.com/en/actions/reference/workflow-syntax-for-github-actions](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions) |
+| **GitHub Actions Playground** | [lab.github.com](https://lab.github.com/)                                                                                                                  |

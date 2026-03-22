@@ -1,0 +1,202 @@
+
+---
+title: "Python CI/CD Pipeline"
+description: "Configurar integración continua para proyectos Python"
+module: "github-actions"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar un pipeline CI para Python
+2. ✅ Ejecutar tests automáticamente en cada push
+3. ✅ Validar código con linters (flake8, black)
+````
+---
+
+## 📚 Teoría Esencial
+
+### Componentes de un Pipeline CI
+
+| **Componente**         | **Propósito**                          | **Ejemplo** |
+| ---------------------- | -------------------------------------- | ----------- |
+| **Checkout**           | Obtener el código del repositorio      | `actions/checkout@v4` |
+| **Setup Python**       | Configurar versión de Python           | `actions/setup-python@v5` |
+| **Install Dependencies** | Instalar dependencias del proyecto   | `pip install -r requirements.txt` |
+| **Run Tests**          | Ejecutar suite de tests                | `pytest` |
+| **Lint/Format**        | Validar estilo de código               | `flake8`, `black` |
+
+---
+
+### Estructura de Proyecto Python
+
+| **Archivo**            | **Propósito**                          | **Ejemplo** |
+| ---------------------- | -------------------------------------- | ----------- |
+| **requirements.txt**   | Dependencias del proyecto              | `fastapi==0.109.0` |
+| **requirements-dev.txt** | Dependencias de desarrollo           | `pytest`, `flake8` |
+| **pytest.ini**         | Configuración de pytest                | `testpaths = tests` |
+| **.flake8**            | Configuración de flake8                | `max-line-length = 88` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Workflow Completo para Python
+
+```yaml
+# .github/workflows/python-ci.yml
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Run linter
+        run: flake8 src/
+      
+      - name: Run formatter check
+        run: black --check src/
+      
+      - name: Run tests
+        run: pytest tests/ -v --cov=src
+```
+
+### requirements-dev.txt
+
+```txt
+# requirements-dev.txt
+pytest>=7.0.0
+pytest-cov>=4.0.0
+flake8>=6.0.0
+black>=23.0.0
+```
+
+### Estructura de Tests
+
+```python
+# tests/test_main.py
+def test_suma():
+    assert 1 + 1 == 2
+
+def test_resta():
+    assert 5 - 3 == 2
+
+def test_multiplicacion():
+    assert 4 * 3 == 12
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura CI para tu proyecto FastAPI
+````markdown
+1. Crea `.github/workflows/python-ci.yml`
+2. Añade `requirements-dev.txt` con pytest y flake8
+3. Crea tests básicos en `tests/`
+4. Configura el workflow para ejecutar en push y PR
+5. Verifica que los tests pasan en GitHub Actions
+````
+-- archivo: .github/workflows/python-ci.yml:
+```yaml
+# Tu código aquí
+# .github/workflows/python-ci.yml
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run tests
+        run: pytest tests/ -v
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El workflow se ejecuta en push a main
+- [ ] Los tests pasan correctamente
+- [ ] El linter valida el código sin errores
+- [ ] Puedes ver los logs en GitHub Actions
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué action configura Python en GitHub Actions?**
+````markdown
+- `actions/python@v5`
+- `actions/setup-python@v5` ✅
+- `setup-python@v5`
+````
+**2. ¿Dónde se ejecutan los workflows de GitHub Actions?**
+````markdown
+- En tu servidor local
+- En runners de GitHub ✅
+- En AWS Lambda
+````
+**3. ¿Qué comando ejecuta pytest con verbose?**
+````markdown
+- `pytest`
+- `pytest -v` ✅
+- `pytest --verbose`
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **GitHub Actions for Python**  | [docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python](https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python) |
+| **pytest Docs**                | [docs.pytest.org](https://docs.pytest.org/) |
+| **flake8 Docs**                | [flake8.pycqa.org](https://flake8.pycqa.org/) |
+
+
+

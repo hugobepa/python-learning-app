@@ -1,0 +1,280 @@
+
+---
+title: "Deploy Automation a Producción"
+description: "Configurar despliegue automático con GitHub Actions"
+module: "github-actions"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 5
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar deploy automático a producción
+2. ✅ Usar environments para diferentes entornos
+3. ✅ Implementar aprobación manual para producción
+````
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Deploy en CI/CD
+
+| **Tipo**                  | **Descripción**                                  | **Cuándo Usar**     |
+| ------------------------- | ------------------------------------------------ | ------------------- |
+| **Continuous Delivery**   | Deploy automático a staging, manual a producción | Proyectos críticos  |
+| **Continuous Deployment** | Deploy automático a producción                   | Proyectos maduros   |
+| **Manual Deploy**         | Deploy solo con aprobación manual                | Producción sensible |
+
+---
+
+### Environments en GitHub Actions
+
+| **Entorno**     | **Propósito**                 | **Requiere Aprobación** |
+| --------------- | ----------------------------- | ----------------------- |
+| **development** | Desarrollo y pruebas          | No                      |
+| **staging**     | Pre-producción, testing final | Opcional                |
+| **production**  | Producción real               | Sí (recomendado)        |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Workflow de Deploy a GitHub Pages
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+
+### Deploy a Servidor con SSH
+
+```yaml
+# .github/workflows/deploy-server.yml
+name: Deploy to Server
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/myapp
+            git pull origin main
+            pip install -r requirements.txt
+            systemctl restart myapp
+```
+
+### Deploy con Aprobación Manual
+
+```yaml
+# .github/workflows/deploy-prod.yml
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy version ${{ github.event.inputs.version }}
+        run: |
+          echo "Deploying version ${{ github.event.inputs.version }}"
+          ./deploy.sh ${{ github.event.inputs.version }}
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura deploy para tu proyecto Astro
+````markdown
+1. Configura GitHub Pages en tu repositorio
+2. Crea `.github/workflows/deploy.yml`
+3. Añade environment `production` con aprobación
+4. Configura secrets si necesitas credenciales
+5. Verifica el deploy en GitHub Actions
+````
+
+--  fichero deploy :
+```yaml
+# Tu código aquí
+# .github/workflows/deploy.yml
+name: Deploy Astro Site
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El workflow se ejecuta en push a main
+- [ ] El build se completa sin errores
+- [ ] El deploy se publica en GitHub Pages
+- [ ] La URL del sitio es accesible
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué permission se necesita para GitHub Pages?**
+
+```markdown
+- `contents: write`
+- `pages: write` ✅
+- `deploy: write`
+```
+
+**2. ¿Cómo se requiere aprobación para production?**
+
+```markdown
+- Configurar environment en GitHub Settings ✅
+- Añadir `require-approval: true`
+- Usar `workflow_dispatch`
+```
+
+**3. ¿Qué action sube el artifact para Pages?**
+
+```markdown
+- `actions/upload-artifact@v4`
+- `actions/upload-pages-artifact@v3` ✅
+- `actions/deploy-pages@v4`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**             | **URL**                                                                                                                                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **GitHub Pages Deploy** | [docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) |
+| **Environments**        | [docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)                           |
+| **Deploy Actions**      | [github.com/actions/deploy-pages](https://github.com/actions/deploy-pages)                                                                                                                                                                             |
+
+

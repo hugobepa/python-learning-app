@@ -1,0 +1,261 @@
+
+---
+title: "Tareas Programadas con Cron"
+description: "Automatizar workflows con schedules y eventos temporizados"
+module: "github-actions"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar workflows con schedule trigger
+2. ✅ Usar sintaxis cron para programación
+3. ✅ Implementar tareas automáticas (backups, reports, cleanup)
+````
+---
+
+## 📚 Teoría Esencial
+
+### Tipos de Triggers Temporizados
+
+| **Trigger**            | **Descripción**                          | **Cuándo Usar** |
+| ---------------------- | ---------------------------------------- | --------------- |
+| **schedule**           | Ejecutar en horarios específicos         | Tareas recurrentes |
+| **workflow_dispatch**  | Ejecutar manualmente desde UI            | Deploys on-demand |
+| **repository_dispatch**| Ejecutar desde API externa               | Integraciones externas |
+
+---
+
+### Sintaxis Cron en GitHub Actions
+
+| **Campo**              | **Valores**                              | **Ejemplo** |
+| ---------------------- | ---------------------------------------- | ----------- |
+| **Minuto**             | 0-59                                     | `0` |
+| **Hora**               | 0-23                                     | `0` |
+| **Día del mes**        | 1-31                                     | `1` |
+| **Mes**                | 1-12                                     | `1` |
+| **Día de la semana**   | 0-6 (0 = Domingo)                        | `*` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Schedule Básico - Diario a Medianoche
+
+```yaml
+# .github/workflows/daily-backup.yml
+name: Daily Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # UTC: Daily at midnight
+  
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Run backup script
+        run: |
+          echo "Running daily backup..."
+          ./scripts/backup.sh
+      
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: ./backup/
+```
+
+### Schedule Avanzado - Cada Hora en Horario Laboral
+
+```yaml
+# .github/workflows/hourly-check.yml
+name: Hourly Health Check
+
+on:
+  schedule:
+    - cron: '0 8-18 * * 1-5'  # Mon-Fri, 8am-6pm UTC
+  
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check API health
+        run: |
+          curl -f https://api.example.com/health || exit 1
+      
+      - name: Send notification if failed
+        if: failure()
+        run: |
+          echo "API health check failed!"
+          # Send Slack/Email notification
+```
+
+### Schedule Semanal - Limpieza de Recursos
+
+```yaml
+# .github/workflows/weekly-cleanup.yml
+name: Weekly Cleanup
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Sunday at 2am UTC
+  
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Cleanup old artifacts
+        uses: geekyeggo/delete-artifact@v4
+        with:
+          name: backup-*
+          failOnError: false
+      
+      - name: Cleanup old releases
+        run: |
+          echo "Cleaning up old releases..."
+          # Custom cleanup script
+```
+
+### Múltiples Schedules en Un Workflow
+
+```yaml
+# .github/workflows/multi-schedule.yml
+name: Multi-Schedule Tasks
+
+on:
+  schedule:
+    - cron: '0 0 * * *'      # Daily at midnight
+    - cron: '0 12 * * 1-5'   # Weekdays at noon
+    - cron: '0 0 * * 0'      # Weekly on Sunday
+  
+  workflow_dispatch:
+
+jobs:
+  task:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Determine schedule type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger"
+          else
+            echo "Scheduled trigger"
+          fi
+      
+      - name: Run task
+        run: ./scripts/task.sh
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura un workflow programado para tu proyecto
+````markdown
+1. Crea `.github/workflows/scheduled-task.yml`
+2. Configura un schedule que ejecute diariamente
+3. Añade workflow_dispatch para trigger manual
+4. Implementa una tarea simple (ej: verificar dependencias)
+5. Verifica la ejecución en GitHub Actions
+````
+
+-- archivo:
+```yaml
+# Tu código aquí
+# .github/workflows/scheduled-task.yml
+name: Daily Dependency Check
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6am UTC
+  
+  workflow_dispatch:
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Check for outdated packages
+        run: |
+          pip install --upgrade pip
+          pip list --outdated
+      
+      - name: Create issue if outdated
+        if: failure()
+        run: |
+          echo "Some packages are outdated!"
+          # Could create GitHub issue automatically
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El workflow tiene trigger schedule configurado
+- [ ] workflow_dispatch permite ejecución manual
+- [ ] La tarea se ejecuta en el horario programado
+- [ ] Puedes ver los logs en GitHub Actions
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué trigger se usa para tareas programadas?**
+````markdown
+- `on: timer`
+- `on: schedule` ✅
+- `on: cron`
+````
+**2. ¿Qué significa `cron: '0 0 * * *'`?**
+````markdown
+- Cada hora
+- Diario a medianoche UTC ✅
+- Semanal
+````
+**3. ¿Cómo se ejecuta un workflow schedule manualmente?**
+````markdown
+- No se puede
+- Añadiendo `workflow_dispatch` ✅
+- Usando la API de GitHub
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **GitHub Actions Schedule**    | [docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule) |
+| **Cron Expression Generator**  | [crontab.guru](https://crontab.guru/) |
+| **GitHub Actions Tips**        | [github.blog/2022-02-10-using-github-actions-schedules/](https://github.blog/2022-02-10-using-github-actions-schedules/) |
+```
