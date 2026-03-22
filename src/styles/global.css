@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family:
     system-ui,
@@ -11,10 +15,27 @@ body {
 
 /* ── MDX / prose responsive fixes ── */
 
+.lesson-content {
+  max-width: 100%;
+}
+
+.lesson-content > * {
+  max-width: 100%;
+}
+
 /* Code blocks scroll horizontally instead of overflowing */
 .prose pre {
   overflow-x: auto;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose pre code {
+  display: block;
+  min-width: max-content;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 /* Tables scroll horizontally on narrow screens */
@@ -22,6 +43,13 @@ body {
   display: block;
   overflow-x: auto;
   max-width: 100%;
+  width: max-content;
+  min-width: 100%;
+}
+
+.prose th,
+.prose td {
+  white-space: normal;
 }
 
 /* Images never exceed their container */
@@ -30,14 +58,22 @@ body {
   height: auto;
 }
 
+.prose p,
+.prose li,
+.prose blockquote,
+.prose a {
+  overflow-wrap: anywhere;
+}
+
 /* Inline code wraps rather than breaking layout */
 .prose :not(pre) > code {
+  overflow-wrap: anywhere;
   word-break: break-word;
   white-space: normal;
 }
 
 /* Long URLs / unbreakable strings inside prose wrap */
 .prose {
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
