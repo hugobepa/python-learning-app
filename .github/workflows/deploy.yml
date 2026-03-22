@@ -34,6 +34,13 @@ jobs:
       - name: Build Astro
         run: npm run build
 
+      - name: List `dist` contents
+        run: |
+          echo "Listing ./dist"
+          ls -la ./dist || true
+          echo "Size summary"
+          du -sh ./dist || true
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
