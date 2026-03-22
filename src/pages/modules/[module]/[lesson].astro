@@ -48,9 +48,25 @@ const mdxEntry = (mdxMap[module] && mdxMap[module][lesson]) ?? null;
 const data = mdxEntry ? { title: mdxEntry.frontmatter?.title ?? `Lección ${lesson}`, content: null } : { title: `Lección ${lesson}`, content: 'Contenido no disponible' };
 const MDXComponent = mdxEntry?.component ?? null;
 
+const moduleOrder = ['fundamentos-python', 'apis-fastapi', 'github-actions', 'python-n8n', 'python-docker', 'proyecto-integrador'];
+const TOTAL_LESSONS = 6;
 const lessonNum = parseInt(lesson);
+const moduleIndex = moduleOrder.indexOf(module);
+
 const prevLesson = lessonNum > 1 ? (lessonNum - 1).toString() : null;
-const nextLesson = (lessonNum + 1).toString();
+
+let nextHref: string;
+let nextLabel: string;
+if (lessonNum < TOTAL_LESSONS) {
+  nextHref = `/modules/${module}/${lessonNum + 1}`;
+  nextLabel = 'Siguiente →';
+} else if (moduleIndex >= 0 && moduleIndex < moduleOrder.length - 1) {
+  nextHref = `/modules/${moduleOrder[moduleIndex + 1]}/1`;
+  nextLabel = 'Siguiente módulo →';
+} else {
+  nextHref = '/dashboard';
+  nextLabel = 'Ir al dashboard →';
+}
 ---
 
 <BaseLayout title={data.title} description="Lección del curso">
@@ -63,12 +79,21 @@ const nextLesson = (lessonNum + 1).toString();
       {MDXComponent ? <MDXComponent /> : <div set:html={data.content} />}
     </article>
 
-    <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t flex justify-between items-center gap-4 text-sm sm:text-base">
+    <!-- Numeric paginator — hidden on mobile -->
+    <nav aria-label="Lecciones del módulo" class="hidden sm:flex items-center justify-center gap-1 mt-6 sm:mt-8">
+      {Array.from({ length: TOTAL_LESSONS }, (_, i) => i + 1).map((n) => (
+        n === lessonNum
+          ? <span class="w-9 h-9 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-sm" aria-current="page">{n}</span>
+          : <a href={`/modules/${module}/${n}`} class="w-9 h-9 flex items-center justify-center rounded-full border-2 border-gray-200 text-gray-600 font-medium text-sm hover:border-blue-500 hover:text-blue-600 transition">{n}</a>
+      ))}
+    </nav>
+
+    <div class="mt-4 pt-6 sm:pt-8 border-t flex justify-between items-center gap-4 text-sm sm:text-base">
       {prevLesson
         ? <a href={`/modules/${module}/${prevLesson}`} class="text-gray-600 hover:text-gray-900">← Anterior</a>
         : <span class="text-gray-300 select-none" aria-hidden="true">← Anterior</span>
       }
-      <a href={`/modules/${module}/${nextLesson}`} class="text-blue-600 hover:text-blue-800 ml-auto">Siguiente →</a>
+      <a href={nextHref} class="text-blue-600 hover:text-blue-800 ml-auto">{nextLabel}</a>
     </div>
   </div>
 </BaseLayout>
