@@ -55,6 +55,27 @@ jobs:
           echo "repo: ${{ github.repository }}"
           echo "actor: ${{ github.actor }}"
 
+      - name: Check GitHub action env
+        run: |
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          echo "GITHUB_REPOSITORY=${{ github.repository }}"
+
+      - name: Check GitHub Pages API
+        run: |
+          REPO="${{ github.repository }}"
+          echo "Checking Pages for $REPO"
+          STATUS=$(curl -s -o /tmp/pages_body -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$REPO/pages") || true
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Body:" || true
+            cat /tmp/pages_body || true
+            exit 0
+          else
+            echo "Pages API returned OK" || true
+            cat /tmp/pages_body || true
+          fi
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
