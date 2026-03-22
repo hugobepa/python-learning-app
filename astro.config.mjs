@@ -7,17 +7,20 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: 'https://hugobepa.github.io/python-learning-app',
   base: '/python-learning-app/',
+  output: 'static',
   integrations: [
     react(),
     mdx(),
     tailwind(),
     sitemap()
   ],
-  output: 'static',
   markdown: {
+    syntaxHighlight: 'shiki',
     shikiConfig: {
       theme: 'github-dark',
     },
-    syntaxHighlight: 'shiki',
+  },
+  build: {
+    inlineStylesheets: 'auto',
   },
 });
