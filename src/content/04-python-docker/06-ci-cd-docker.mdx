@@ -1,0 +1,257 @@
+
+---
+title: "CI/CD con Docker y GitHub Actions"
+description: "Automatizar build y deploy de contenedores Docker"
+module: "python-docker"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+
+1. ✅ Configurar GitHub Actions para build de Docker
+2. ✅ Push automático a Docker Hub o GitHub Container Registry
+3. ✅ Implementar deploy continuo con contenedores
+
+---
+
+## 📚 Teoría Esencial
+
+### Registro de Contenedores
+
+| **Registro**           | **Descripción**                          | **Costo** |
+| ---------------------- | ---------------------------------------- | --------- |
+| **Docker Hub**         | Registro público de Docker               | Gratis (limitado) |
+| **GitHub Container Registry** | Registro integrado con GitHub    | Gratis (500MB) |
+| **AWS ECR**            | Elastic Container Registry de AWS        | Pay per use |
+| **Google GCR**         | Google Container Registry                | Pay per use |
+
+---
+
+### Flujo de CI/CD con Docker
+
+| **Etapa**              | **Descripción**                          | **Herramienta** |
+| ---------------------- | ---------------------------------------- | --------------- |
+| **Build**              | Construir imagen Docker                  | `docker build` |
+| **Test**               | Ejecutar tests en contenedor             | `pytest` |
+| **Push**               | Subir imagen al registro                 | `docker push` |
+| **Deploy**             | Desplegar en producción                  | Docker Compose / K8s |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### GitHub Actions para Docker Build & Push
+
+```yaml
+# .github/workflows/docker-ci.yml
+name: Docker CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Run tests
+        run: |
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} pytest tests/
+```
+
+### Docker Compose para Deploy
+
+```yaml
+# docker-compose.deploy.yml
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+    container_name: fastapi-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    networks:
+      - prod-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - prod-db-/var/lib/postgresql/data
+    networks:
+      - prod-network
+    restart: always
+
+volumes:
+  prod-db-data:
+
+networks:
+  prod-network:
+```
+
+### Comandos para CI/CD
+
+```bash
+# Login a GitHub Container Registry
+echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+# Build de imagen
+docker build -t ghcr.io/usuario/repo:latest .
+
+# Push de imagen
+docker push ghcr.io/usuario/repo:latest
+
+# Pull en servidor de producción
+docker pull ghcr.io/usuario/repo:latest
+
+# Deploy con docker-compose
+docker-compose -f docker-compose.deploy.yml up -d
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura CI/CD para tu API Dockerizada
+```markdown
+1. Crea `.github/workflows/docker-ci.yml`
+2. Configura permisos para packages
+3. Añade build y push automático
+4. Configura secrets en GitHub
+5. Verifica el push en GitHub Packages
+```
+-- arcjivo:
+```yaml
+# Tu código aquí
+# .github/workflows/docker-ci.yml
+name: Docker CI
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+```
+
+---
+
+## ✅ Criterios de Éxito
+```markdown
+- [ ] El workflow se ejecuta en push a main
+- [ ] La imagen se construye sin errores
+- [ ] La imagen se sube a GitHub Container Registry
+- [ ] Puedes ver la imagen en GitHub Packages
+```
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué action se usa para login en Docker Registry?**
+```markdown
+- `docker/login-action@v3` ✅
+- `docker/auth-action@v3`
+- `registry/login@v3`
+```
+**2. ¿Dónde se almacenan las imágenes de GitHub?**
+```markdown
+- Docker Hub
+- GitHub Container Registry (ghcr.io) ✅
+- AWS ECR
+```
+**3. ¿Qué permiso se necesita para push de packages?**
+```markdown
+- `contents: write`
+- `packages: write` ✅
+- `registry: write`
+```
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **GitHub Container Registry**  | [docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) |
+| **Docker Build Push Action**   | [github.com/docker/build-push-action](https://github.com/docker/build-push-action) |
+| **Docker Login Action**        | [github.com/docker/login-action](https://github.com/docker/login-action) |
+| **Awesome Docker CI/CD**       | [github.com/veggiemonk/awesome-docker](https://github.com/veggiemonk/awesome-docker) |

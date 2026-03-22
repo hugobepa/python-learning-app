@@ -1,0 +1,259 @@
+
+---
+title: "Multi-Stage Builds para Imágenes Optimizadas"
+description: "Reducir el tamaño de imágenes con builds en múltiples etapas"
+module: "python-docker"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Comprender qué son los multi-stage builds
+2. ✅ Crear Dockerfiles con múltiples etapas
+3. ✅ Reducir el tamaño de imágenes de producción
+````
+---
+
+## 📚 Teoría Esencial
+
+### ¿Qué es Multi-Stage Build?
+
+| **Concepto**           | **Descripción**                          | **Beneficio** |
+| ---------------------- | ---------------------------------------- | ------------- |
+| **Build Stage**        | Etapa para compilar/construir            | Herramientas completas |
+| **Production Stage**   | Etapa final para producción              | Solo lo necesario |
+| **Copy Between**       | Copiar artifacts entre etapas            | Imagen limpia |
+| **Size Reduction**     | Imagen final más pequeña                 | 70-90% reducción |
+
+---
+
+### Comparación de Tamaños de Imagen
+
+| **Tipo**               | **Tamaño Aproximado**                    | **Uso** |
+| ---------------------- | ---------------------------------------- | ------- |
+| **Single-Stage**       | ~1GB (python:3.12 completo)              | Desarrollo |
+| **Multi-Stage Slim**   | ~150MB (python:3.12-slim)                | Producción |
+| **Multi-Stage Alpine** | ~50MB (python:3.12-alpine)               | Producción optimizada |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Dockerfile Multi-Stage Básico
+
+```dockerfile
+# Dockerfile
+# ============================================
+# ETAPA 1: Build
+# ============================================
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Instalar dependencias de build
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar y instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# ============================================
+# ETAPA 2: Production
+# ============================================
+FROM python:3.12-slim AS production
+
+WORKDIR /app
+
+# Copiar solo lo necesario desde builder
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app .
+
+# Configurar PATH
+ENV PATH=/root/.local/bin:$PATH
+
+# Usuario no root
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Multi-Stage con Alpine (Mínimo)
+
+```dockerfile
+# Dockerfile
+# ============================================
+# ETAPA 1: Build
+# ============================================
+FROM python:3.12 AS builder
+
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# ============================================
+# ETAPA 2: Production (Alpine)
+# ============================================
+FROM python:3.12-alpine AS production
+
+WORKDIR /app
+
+# Copiar dependencias instaladas
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app .
+
+ENV PATH=/root/.local/bin:$PATH
+
+# Usuario no root
+RUN adduser -D appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Comandos para Verificar Tamaño
+
+```bash
+# Construir imagen
+docker build -t mi-app:latest .
+
+# Ver tamaño de imagen
+docker images mi-app
+
+# Comparar tamaños
+docker images | grep mi-app
+
+# Ejecutar y verificar
+docker run -d -p 8000:8000 --name mi-app mi-app:latest
+
+# Ver logs
+docker logs mi-app
+
+# Limpiar
+docker stop mi-app && docker rm mi-app
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Optimiza tu Dockerfile con multi-stage
+````markdown
+1. Crea un Dockerfile con 2 etapas (build y production)
+2. Usa python:3.12-slim para ambas etapas
+3. Copia solo lo necesario a la etapa final
+4. Compara el tamaño con tu Dockerfile anterior
+5. Verifica que la app funciona correctamente
+````
+
+-- fichero:
+```dockerfile
+# Tu código aquí
+# Dockerfile
+# ============================================
+# ETAPA 1: Build
+# ============================================
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Instalar dependencias de build
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# ============================================
+# ETAPA 2: Production
+# ============================================
+FROM python:3.12-slim AS production
+
+WORKDIR /app
+
+# Copiar desde builder
+COPY --from=builder /root/.local /root/.local
+COPY . .
+
+ENV PATH=/root/.local/bin:$PATH
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+-- comandos para probar:
+```bash
+# Comandos para probar
+# Construir imagen
+docker build -t fastapi-optimized:latest .
+
+# Ver tamaño
+docker images | grep fastapi
+
+# Ejecutar
+docker run -d -p 8000:8000 --name fastapi-app fastapi-optimized:latest
+
+# Probar API
+curl http://localhost:8000
+
+# Limpiar
+docker stop fastapi-app && docker rm fastapi-app
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El Dockerfile tiene al menos 2 etapas (FROM ... AS)
+- [ ] La imagen final es más pequeña que la single-stage
+- [ ] La aplicación funciona correctamente
+- [ ] Solo se copian los archivos necesarios
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué keyword define una etapa en multi-stage build?**
+````markdown
+- `STAGE`
+- `AS` ✅
+- `PHASE`
+````
+**2. ¿Cómo se copian archivos entre etapas?**
+````markdown
+- `COPY --from=etapa` ✅
+- `COPY --stage=etapa`
+- `TRANSFER --from=etapa`
+````
+**3. ¿Qué ventaja tiene multi-stage build?**
+````markdown
+- Imágenes más pequeñas ✅
+- Más rápido el build
+- Mejor seguridad
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **Docker Multi-Stage**         | [docs.docker.com/build/building/multi-stage](https://docs.docker.com/build/building/multi-stage/) |
+| **Docker Best Practices**      | [docs.docker.com/develop/develop-images/dockerfile_best-practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) |
+| **Python Docker Images**       | [hub.docker.com/_/python](https://hub.docker.com/_/python) |
+| **Alpine Linux**               | [alpinelinux.org](https://alpinelinux.org/) |
+

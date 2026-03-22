@@ -1,0 +1,286 @@
+
+---
+title: "Docker Compose para Multi-Servicios"
+description: "Orquestar múltiples contenedores con Docker Compose"
+module: "python-docker"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 3
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Crear archivos docker-compose.yml
+2. ✅ Configurar múltiples servicios (app, db, redis)
+3. ✅ Gestionar redes y volúmenes compartidos
+````
+---
+
+## 📚 Teoría Esencial
+
+### ¿Qué es Docker Compose?
+
+| **Característica**   | **Descripción**                          | **Beneficio**       |
+| -------------------- | ---------------------------------------- | ------------------- |
+| **Multi-Container**  | Define múltiples servicios en un archivo | Orquestación simple |
+| **YAML Format**      | Configuración legible                    | Fácil de mantener   |
+| **Single Command**   | `docker-compose up`                      | Deploy rápido       |
+| **Environment Mgmt** | Variables por entorno                    | Flexibilidad        |
+
+---
+
+### Componentes de Docker Compose
+
+| **Componente**  | **Propósito**                | **Ejemplo**          |
+| --------------- | ---------------------------- | -------------------- |
+| **Services**    | Contenedores individuales    | `app`, `db`, `redis` |
+| **Networks**    | Comunicación entre servicios | `app-network`        |
+| **Volumes**     | Persistencia de datos        | `db-data`            |
+| **Environment** | Variables de entorno         | `DATABASE_URL`       |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Docker Compose Básico para FastAPI + PostgreSQL
+
+```yaml
+# docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+      - SECRET_KEY=tu_clave_secreta
+    depends_on:
+      - db
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+
+### Comandos de Docker Compose
+
+```bash
+# Iniciar todos los servicios
+docker-compose up
+
+# Iniciar en segundo plano (detached)
+docker-compose up -d
+
+# Ver logs de todos los servicios
+docker-compose logs
+
+# Ver logs de un servicio específico
+docker-compose logs -f app
+
+# Detener todos los servicios
+docker-compose down
+
+# Detener y eliminar volúmenes
+docker-compose down -v
+
+# Reconstruir imágenes
+docker-compose up -d --build
+
+# Ver estado de servicios
+docker-compose ps
+```
+
+### Docker Compose con Redis (Cache)
+
+```yaml
+# docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+  redis-data:
+
+networks:
+  app-network:
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea docker-compose para tu API FastAPI
+
+```markdown
+1. Crea `docker-compose.yml` en la raíz del proyecto
+2. Configura servicio de app con FastAPI
+3. Añade servicio de PostgreSQL
+4. Configura redes y volúmenes
+5. Inicia todos los servicios
+```
+
+-- yaml:
+
+```yaml
+# Tu código aquí
+# docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: mi-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/midb
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    networks:
+      - mi-red
+
+  db:
+    image: postgres:15
+    container_name: mi-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=midb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - mi-red
+
+volumes:
+  db-data:
+
+networks:
+  mi-red:
+```
+
+-- bash:
+
+```bash
+# Comandos para probar
+# Iniciar servicios
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f app
+
+# Detener servicios
+docker-compose down
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] El archivo docker-compose.yml está correcto
+- [ ] Todos los servicios inician sin errores
+- [ ] La API responde en localhost:8000
+- [ ] La base de datos persiste datos
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué comando inicia servicios en segundo plano?**
+
+```markdown
+- `docker-compose start`
+- `docker-compose up -d` ✅
+- `docker-compose run -d`
+```
+
+**2. ¿Para qué sirve `depends_on`?**
+
+```markdown
+- Define orden de inicio de servicios ✅
+- Crea dependencias de paquetes
+- Configura redes
+```
+
+**3. ¿Cómo se elimina un volumen en docker-compose?**
+
+```markdown
+- `docker-compose down`
+- `docker-compose down -v` ✅
+- `docker-compose rm -v`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                  | **URL**                                                                                                   |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Docker Compose Docs**      | [docs.docker.com/compose](https://docs.docker.com/compose/)                                               |
+| **Compose File Reference**   | [docs.docker.com/compose/compose-file](https://docs.docker.com/compose/compose-file/)                     |
+| **Awesome Compose**          | [github.com/docker/awesome-compose](https://github.com/docker/awesome-compose)                            |
+| **FastAPI + Docker Compose** | [fastapi.tiangolo.com/deployment/docker-compose](https://fastapi.tiangolo.com/deployment/docker-compose/) |

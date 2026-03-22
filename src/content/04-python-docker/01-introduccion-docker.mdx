@@ -1,0 +1,180 @@
+
+
+---
+title: "Introducción a Docker y Contenedores"
+description: "Conceptos básicos de Docker para aplicaciones Python"
+module: "python-docker"
+level: "intermediate"
+duration: "20 min"
+xp: 50
+order: 1
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Comprender qué es Docker y por qué usarlo
+2. ✅ Diferenciar entre imágenes y contenedores
+3. ✅ Instalar Docker en tu sistema
+````
+---
+
+## 📚 Teoría Esencial
+
+### ¿Qué es Docker?
+
+| **Concepto**   | **Descripción**                     | **Beneficio**    |
+| -------------- | ----------------------------------- | ---------------- |
+| **Contenedor** | Entorno aislado para ejecutar apps  | Portabilidad     |
+| **Imagen**     | Plantilla de solo lectura           | Consistencia     |
+| **Dockerfile** | Instrucciones para construir imagen | Reproducibilidad |
+| **Docker Hub** | Registro de imágenes públicas       | Reutilización    |
+
+---
+
+### Docker vs Máquinas Virtuales
+
+| **Característica** | **Docker**               | **VM**        |
+| ------------------ | ------------------------ | ------------- |
+| **Tamaño**         | MB (ligero)              | GB (pesado)   |
+| **Inicio**         | Segundos                 | Minutos       |
+| **Kernel**         | Comparte kernel del host | Kernel propio |
+| **Rendimiento**    | Nativo                   | Overhead      |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Instalación de Docker
+
+```bash
+# Windows: Docker Desktop
+# https://www.docker.com/products/docker-desktop
+
+# macOS: Docker Desktop
+# https://www.docker.com/products/docker-desktop
+
+# Linux (Ubuntu)
+sudo apt update
+sudo apt install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Verificar instalación
+docker --version
+docker run hello-world
+```
+
+
+### Comandos Básicos de Docker
+
+```bash
+# Verificar Docker
+docker --version
+
+# Descargar imagen
+docker pull python:3.12
+
+# Listar imágenes
+docker images
+
+# Ejecutar contenedor
+docker run -it python:3.12 python --version
+
+# Listar contenedores
+docker ps -a
+
+# Eliminar contenedor
+docker rm <container_id>
+```
+
+### Dockerfile Básico para Python
+
+```dockerfile
+# Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "main.py"]
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Instala Docker y ejecuta tu primer contenedor
+````markdown
+1. Instala Docker Desktop en tu sistema
+2. Abre terminal y verifica la instalación
+3. Descarga la imagen oficial de Python
+4. Ejecuta un contenedor con Python
+5. Verifica la versión de Python
+````
+
+-- instalacion docker:
+
+```bash
+# Tu código aquí
+# Verificar Docker
+docker --version
+
+# Descargar imagen Python
+docker pull python:3.12-slim
+
+# Ejecutar contenedor interactivo
+docker run -it python:3.12-slim python --version
+
+# Debe mostrar: Python 3.12.x
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] Docker está instalado correctamente
+- [ ] El comando `docker --version` funciona
+- [ ] Puedes descargar imágenes de Docker Hub
+- [ ] Puedes ejecutar contenedores básicos
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué es una imagen de Docker?**
+````markdown
+- Un contenedor en ejecución
+- Una plantilla de solo lectura ✅
+- Un archivo de configuración
+````
+**2. ¿Qué comando descarga una imagen?**
+````markdown
+- `docker get`
+- `docker pull` ✅
+- `docker download`
+````
+**3. ¿Dónde se definen las instrucciones de una imagen?**
+````markdown
+- `docker-compose.yml`
+- `Dockerfile` ✅
+- `requirements.txt`
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**              | **URL**                                                         |
+| ------------------------ | --------------------------------------------------------------- |
+| **Docker Official Docs** | [docs.docker.com](https://docs.docker.com/)                     |
+| **Docker Hub**           | [hub.docker.com](https://hub.docker.com/)                       |
+| **Docker Python Images** | [hub.docker.com/\_/python](https://hub.docker.com/_/python)     |
+| **Play with Docker**     | [labs.play-with-docker.com](https://labs.play-with-docker.com/) |
+
+
+

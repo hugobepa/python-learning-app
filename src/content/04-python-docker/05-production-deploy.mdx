@@ -1,0 +1,296 @@
+
+---
+title: "Deploy de Aplicaciones Python a Producción"
+description: "Desplegar contenedores Docker en producción de forma segura"
+module: "python-docker"
+level: "intermediate"
+duration: "30 min"
+xp: 100
+order: 5
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar Docker para entornos de producción
+2. ✅ Implementar seguridad en contenedores
+3. ✅ Desplegar en servicios cloud (AWS, GCP, Azure)
+````
+---
+
+## 📚 Teoría Esencial
+
+### Consideraciones de Producción
+
+| **Aspecto**            | **Desarrollo**                           | **Producción** |
+| ---------------------- | ---------------------------------------- | -------------- |
+| **Imagen Base**        | python:3.12 (completa)                   | python:3.12-slim |
+| **Debug Mode**         | Activado                                 | Desactivado |
+| **Logs**               | Consola                                  | Archivo/Sistema |
+| **Usuario**            | root                                     | No root |
+| **Secrets**            | .env local                               | Docker Secrets |
+
+---
+
+### Mejores Prácticas de Seguridad
+
+| **Práctica**           | **Descripción**                          | **Beneficio** |
+| ---------------------- | ---------------------------------------- | ------------- |
+| **Non-root User**      | Ejecutar como usuario sin privilegios    | Menos riesgo |
+| **Minimal Image**      | Usar imágenes slim o alpine              | Menos vulnerabilidades |
+| **Secrets Management** | No hardcodear credenciales               | Seguridad |
+| **Health Checks**      | Verificar estado del contenedor          | Alta disponibilidad |
+| **Resource Limits**    | Limitar CPU y memoria                    | Estabilidad |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Dockerfile de Producción
+
+```dockerfile
+# Dockerfile
+FROM python:3.12-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV NODE_ENV=production
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar aplicación
+COPY . .
+
+# Usuario no root
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Exponer puerto
+EXPOSE 8000
+
+# Ejecutar aplicación
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+```
+
+### Docker Compose para Producción
+
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - prod-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  db:
+    image: postgres:15
+    container_name: postgres-prod
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    networks:
+      - prod-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-prod
+    networks:
+      - prod-network
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - prod-redis-data:/data
+
+volumes:
+  prod-db-data:
+  prod-redis-data:
+
+networks:
+  prod-network:
+    driver: bridge
+```
+
+### Variables de Entorno (.env)
+
+```bash
+# .env (NO subir a Git)
+# Database
+DATABASE_URL=postgresql://user:password@db:5432/mydb
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password_seguro_aqui
+POSTGRES_DB=mydb
+
+# Security
+SECRET_KEY=tu_clave_secreta_muy_larga_y_segura
+ENVIRONMENT=production
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura deploy de producción para tu API
+````markdown
+1. Crea `docker-compose.prod.yml` para producción
+2. Configura variables de entorno en `.env`
+3. Añade health checks a todos los servicios
+4. Configura límites de recursos
+5. Prueba el deploy localmente
+````
+
+--archivo:
+```yaml
+# Tu código aquí
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: mi-api-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - db
+    networks:
+      - prod-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    networks:
+      - prod-network
+    restart: always
+
+volumes:
+  prod-db-data:
+
+networks:
+  prod-network:
+```
+-- comandos:
+```bash
+# Comandos para deploy
+# Crear archivo .env
+echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+
+# Iniciar en producción
+docker-compose -f docker-compose.prod.yml up -d
+
+# Verificar estado
+docker-compose -f docker-compose.prod.yml ps
+
+# Ver logs
+docker-compose -f docker-compose.prod.yml logs -f app
+
+# Detener
+docker-compose -f docker-compose.prod.yml down
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El Dockerfile usa usuario no root
+- [ ] Los health checks están configurados
+- [ ] Las variables de entorno están en .env
+- [ ] Los volúmenes persisten datos
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Por qué usar usuario no root en producción?**
+````markdown
+- Mejor rendimiento
+- Seguridad reducida ✅
+- Menos permisos de ataque
+````
+**2. ¿Qué hace HEALTHCHECK en Docker?**
+````markdown
+- Verifica el estado del contenedor ✅
+- Reinicia el contenedor
+- Escala automáticamente
+````
+**3. ¿Dónde se guardan los secrets en producción?**
+````markdown
+- En el código
+- En variables de entorno o Docker Secrets ✅
+- En el Dockerfile
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **Docker Production Best Practices** | [docs.docker.com/develop/develop-images/dockerfile_best-practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) |
+| **Docker Health Checks**       | [docs.docker.com/engine/reference/builder/#healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck/) |
+| **Docker Secrets**             | [docs.docker.com/engine/swarm/secrets](https://docs.docker.com/engine/swarm/secrets/) |
+| **12 Factor App**              | [12factor.net](https://12factor.net/) |
+
+

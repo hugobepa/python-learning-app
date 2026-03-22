@@ -1,0 +1,223 @@
+
+---
+title: "Dockerfile para Aplicaciones Python"
+description: "Crear imágenes Docker optimizadas para Python"
+module: "python-docker"
+level: "intermediate"
+duration: "25 min"
+xp: 75
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Escribir un Dockerfile para aplicaciones Python
+2. ✅ Optimizar el tamaño de la imagen
+3. ✅ Configurar variables de entorno correctamente
+````
+---
+
+## 📚 Teoría Esencial
+
+### Instrucciones Comunes de Dockerfile
+
+| **Instrucción**        | **Propósito**                          | **Ejemplo** |
+| ---------------------- | -------------------------------------- | ----------- |
+| **FROM**               | Imagen base                            | `FROM python:3.12` |
+| **WORKDIR**            | Directorio de trabajo                  | `WORKDIR /app` |
+| **COPY**               | Copiar archivos                        | `COPY . .` |
+| **RUN**                | Ejecutar comandos                      | `RUN pip install -r requirements.txt` |
+| **CMD**                | Comando por defecto                    | `CMD ["python", "main.py"]` |
+| **EXPOSE**             | Puerto expuesto                        | `EXPOSE 8000` |
+
+---
+
+### Imágenes Base de Python
+
+| **Imagen**             | **Tamaño**                             | **Uso** |
+| ---------------------- | -------------------------------------- | ------- |
+| **python:3.12**        | ~1GB (completa)                        | Desarrollo |
+| **python:3.12-slim**   | ~150MB (reducida)                      | Producción |
+| **python:3.12-alpine** | ~50MB (mínima)                         | Producción optimizada |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Dockerfile Básico para Python
+
+```dockerfile
+# Dockerfile
+FROM python:3.12-slim
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements primero (mejora cache)
+COPY requirements.txt .
+
+# Instalar dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar el resto del código
+COPY . .
+
+# Exponer puerto
+EXPOSE 8000
+
+# Comando para ejecutar la app
+CMD ["python", "main.py"]
+```
+
+### Dockerfile Optimizado para FastAPI
+
+```dockerfile
+# Dockerfile
+FROM python:3.12-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar aplicación
+COPY . .
+
+# Usuario no root (seguridad)
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Exponer puerto
+EXPOSE 8000
+
+# Ejecutar con uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Comandos de Docker
+
+```bash
+# Construir imagen
+docker build -t mi-app-python .
+
+# Listar imágenes
+docker images
+
+# Ejecutar contenedor
+docker run -p 8000:8000 mi-app-python
+
+# Ejecutar en segundo plano
+docker run -d -p 8000:8000 --name mi-app mi-app-python
+
+# Ver logs
+docker logs mi-app
+
+# Detener contenedor
+docker stop mi-app
+
+# Eliminar contenedor
+docker rm mi-app
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea un Dockerfile para tu API FastAPI
+````markdown
+1. Crea un archivo `Dockerfile` en la raíz del proyecto
+2. Usa python:3.12-slim como base
+3. Configura variables de entorno
+4. Instala dependencias con pip
+5. Ejecuta con uvicorn
+````
+
+-- dockerfile:
+```dockerfile
+# Tu código aquí
+# Dockerfile
+FROM python:3.12-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar aplicación
+COPY . .
+
+# Exponer puerto
+EXPOSE 8000
+
+# Ejecutar aplicación
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+```bash
+# Comandos para probar
+# Construir imagen
+docker build -t fastapi-app .
+
+# Ejecutar contenedor
+docker run -p 8000:8000 fastapi-app
+
+# Probar API
+curl http://localhost:8000
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] El Dockerfile está en la raíz del proyecto
+- [ ] La imagen se construye sin errores
+- [ ] El contenedor se ejecuta correctamente
+- [ ] La API responde en localhost:8000
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué instrucción define la imagen base?**
+````markdown
+- `BASE`
+- `FROM` ✅
+- `IMAGE`
+````
+**2. ¿Qué imagen es más pequeña?**
+````markdown
+- `python:3.12`
+- `python:3.12-slim` ✅
+- `python:3.12-full`
+````
+**3. ¿Para qué sirve `--no-cache-dir` en pip?**
+````markdown
+- Acelera la instalación
+- Reduce el tamaño de la imagen ✅
+- Usa cache local
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                    | **URL**                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **Dockerfile Reference**       | [docs.docker.com/engine/reference/builder](https://docs.docker.com/engine/reference/builder/) |
+| **Python Docker Images**       | [hub.docker.com/_/python](https://hub.docker.com/_/python) |
+| **Docker Best Practices**      | [docs.docker.com/develop/develop-images/dockerfile_best-practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) |
+| **FastAPI Docker**             | [fastapi.tiangolo.com/deployment/docker](https://fastapi.tiangolo.com/deployment/docker/) |
+
