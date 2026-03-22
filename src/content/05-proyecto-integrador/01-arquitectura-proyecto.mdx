@@ -1,0 +1,279 @@
+
+---
+title: "Arquitectura del Proyecto Integrador"
+description: "Diseñar la arquitectura completa integrando todas las tecnologías"
+module: "proyecto-integrador"
+level: "advanced"
+duration: "25 min"
+xp: 50
+order: 1
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Comprender la arquitectura completa del proyecto
+2. ✅ Identificar cómo se integran las tecnologías aprendidas
+3. ✅ Configurar la estructura de directorios del proyecto
+````
+---
+
+## 📚 Teoría Esencial
+
+### Tecnologías del Proyecto Integrador
+
+| **Módulo** | **Tecnología** | **Propósito** | **Ubicación** |
+| ---------- | -------------- | ------------- | ------------- |
+| **00** | Python 3.12+ | Lógica del backend | `/backend` |
+| **01** | FastAPI | API REST | `/backend/api` |
+| **02** | GitHub Actions | CI/CD Pipeline | `/.github/workflows` |
+| **03** | n8n | Automatización con IA | `/automation` |
+| **04** | Docker | Contenerización | `/` (root) |
+
+---
+
+### Arquitectura de Capas
+
+| **Capa** | **Tecnología** | **Responsabilidad** | **Ejemplo** |
+| -------- | -------------- | ------------------- | ----------- |
+| **Frontend** | Astro | UI/UX, renderizado | `src/pages/` |
+| **Backend** | FastAPI | API, lógica de negocio | `backend/main.py` |
+| **Base de Datos** | PostgreSQL | Persistencia de datos | `docker-compose.yml` |
+| **Automatización** | n8n | Workflows, IA | `n8n/workflows/` |
+| **Infraestructura** | Docker + GitHub Actions | Deploy, CI/CD | `.github/` |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Estructura de Directorios del Proyecto
+
+```text
+python-learning-app/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # CI/CD para backend
+│       ├── docker-build.yml    # Build de imágenes Docker
+│       └── deploy.yml          # Deploy a producción
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py             # FastAPI app
+│   │   ├── models/             # Modelos Pydantic
+│   │   ├── routes/             # Endpoints API
+│   │   └── services/           # Lógica de negocio
+│   ├── tests/
+│   │   └── test_main.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── automation/
+│   └── n8n/
+│       └── workflows/          # Workflows de n8n
+├── src/
+│   ├── content/                # Contenido MDX (módulos 00-04)
+│   ├── layouts/
+│   └── pages/
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+### Docker Compose Completo
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # Frontend Astro
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/appdb
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Base de Datos PostgreSQL
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # Automatización n8n
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+  n8n-data:
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+### Variables de Entorno (.env.example)
+
+```bash
+# .env.example (NO subir .env real a Git)
+
+# Security
+SECRET_KEY=tu_clave_secreta_muy_segura
+JWT_SECRET=tu_secreto_jwt
+
+# Database
+DATABASE_URL=postgresql://user:password@db:5432/appdb
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password_seguro
+POSTGRES_DB=appdb
+
+# n8n
+N8N_HOST=localhost
+WEBHOOK_URL=http://localhost:5678/
+
+# Environment
+ENVIRONMENT=development
+DEBUG=True
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura la estructura base del proyecto integrador
+````markdown
+1. Crea la carpeta `src/content/05-proyecto-integrador/`
+2. Crea la estructura de directorios del backend
+3. Configura `docker-compose.yml` con todos los servicios
+4. Crea `.env.example` con las variables necesarias
+5. Verifica que todos los servicios pueden iniciar
+````
+-- archivo:
+```yaml
+# Tu código aquí
+# docker-compose.yml
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/appdb
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+```
+-- comandos:
+```bash
+# Comandos para verificar
+# Iniciar servicios
+docker-compose up -d
+
+# Verificar estado
+docker-compose ps
+
+# Ver logs
+docker-compose logs -f backend
+
+# Detener
+docker-compose down
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] La estructura de directorios está creada
+- [ ] docker-compose.yml tiene todos los servicios
+- [ ] Las variables de entorno están configuradas
+- [ ] Los servicios inician sin errores
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué tecnología se usa para el frontend?**
+````markdown
+- React
+- Astro ✅
+- Vue
+````
+**2. ¿Dónde se configuran los workflows de CI/CD?**
+````markdown
+- `/backend/workflows`
+- `/.github/workflows` ✅
+- `/automation/workflows`
+````
+**3. ¿Qué servicio maneja la automatización con IA?**
+````markdown
+- FastAPI
+- n8n ✅
+- Docker
+````
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso** | **URL** |
+| ----------- | ------- |
+| **12 Factor App** | [12factor.net](https://12factor.net/) |
+| **Microservices Architecture** | [microservices.io](https://microservices.io/) |
+| **Docker Best Practices** | [docs.docker.com/develop/develop-images/dockerfile_best-practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) |
+| **FastAPI Project Structure** | [fastapi.tiangolo.com/tutorial/bigger-applications](https://fastapi.tiangolo.com/tutorial/bigger-applications/) |

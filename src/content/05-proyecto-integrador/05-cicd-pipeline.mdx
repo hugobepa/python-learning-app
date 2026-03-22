@@ -1,0 +1,305 @@
+
+---
+title: "CI/CD Pipeline Completo"
+description: "Configurar integración y despliegue continuo para todo el proyecto"
+module: "proyecto-integrador"
+level: "advanced"
+duration: "30 min"
+xp: 100
+order: 5
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar GitHub Actions para todo el proyecto
+2. ✅ Implementar pipelines de build, test y deploy
+3. ✅ Automatizar el despliegue a producción
+````
+---
+
+## 📚 Teoría Esencial
+
+### Componentes del Pipeline CI/CD
+
+| **Etapa**  | **Propósito**                | **Herramienta**           |
+| ---------- | ---------------------------- | ------------------------- |
+| **Build**  | Construir imágenes Docker    | Docker Build              |
+| **Test**   | Ejecutar tests automatizados | pytest                    |
+| **Lint**   | Validar calidad de código    | flake8, black             |
+| **Push**   | Subir imágenes al registry   | GitHub Container Registry |
+| **Deploy** | Desplegar a producción       | Docker Compose / K8s      |
+
+---
+
+### Workflows de GitHub Actions
+
+| **Workflow**             | **Trigger**              | **Propósito**       |
+| ------------------------ | ------------------------ | ------------------- |
+| **backend-ci.yml**       | push/PR a main           | Tests del backend   |
+| **docker-build.yml**     | push a main              | Build de imágenes   |
+| **deploy.yml**           | push a main + aprobación | Deploy a producción |
+| **scheduled-checks.yml** | schedule (diario)        | Health checks       |
+
+---
+
+## 💻 Ejemplo Guidado
+
+### Backend CI Workflow (.github/workflows/backend-ci.yml)
+
+```yaml
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run linter
+        run: |
+          cd backend
+          flake8 app/
+
+      - name: Run tests
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+```
+
+
+### Docker Build Workflow (.github/workflows/docker-build.yml)
+
+```yaml
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
+```
+
+### Deploy Workflow (.github/workflows/deploy.yml)
+
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no user@server.com << 'EOF'
+            cd /opt/python-learning-app
+            docker-compose pull
+            docker-compose up -d
+            docker system prune -f
+          EOF
+
+      - name: Health Check
+        run: |
+          curl -f https://python-learning-app.com/health || exit 1
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Configura CI/CD para tu proyecto integrador
+````markdown
+1. Crea los workflows en `.github/workflows/`
+2. Configura secrets en GitHub (SSH, tokens)
+3. Añade environment `production` con aprobación
+4. Configura el pipeline completo
+5. Verifica el deploy automático
+````
+- archivo:
+```yaml
+# Tu código aquí
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install & Test
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pytest tests/ -v
+
+  docker-build:
+    needs: backend-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+```
+
+---
+
+## ✅ Criterios de Éxito
+````markdown
+- [ ] Los workflows están en `.github/workflows/`
+- [ ] Los tests se ejecutan en cada PR
+- [ ] Las imágenes Docker se construyen automáticamente
+- [ ] El deploy a producción funciona
+````
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué trigger ejecuta en push a main?**
+````markdown
+- `on: push: branches: [main]` ✅
+- `on: main`
+- `trigger: push`
+````
+**2. ¿Dónde se configuran los secrets en GitHub?**
+
+```markdown
+- En el workflow
+- Settings → Secrets and variables ✅
+- En el código
+```
+
+**3. ¿Qué action se usa para Docker build?**
+
+```markdown
+- `docker/build-action@v5`
+- `docker/build-push-action@v5` ✅
+- `docker-build@v5`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                  | **URL**                                                                                                                                                                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Actions Docs**      | [docs.github.com/en/actions](https://docs.github.com/en/actions)                                                                                                                                                             |
+| **Docker Build Push Action** | [github.com/docker/build-push-action](https://github.com/docker/build-push-action)                                                                                                                                           |
+| **GitHub Environments**      | [docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) |
+| **Awesome GitHub Actions**   | [github.com/sdras/awesome-actions](https://github.com/sdras/awesome-actions)                                                                                                                                                 |

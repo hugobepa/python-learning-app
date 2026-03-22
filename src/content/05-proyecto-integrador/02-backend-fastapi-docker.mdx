@@ -1,0 +1,295 @@
+
+---
+title: "Backend con FastAPI y Docker"
+description: "Implementar el backend API contenerizado con FastAPI"
+module: "proyecto-integrador"
+level: "advanced"
+duration: "30 min"
+xp: 100
+order: 2
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Crear una API FastAPI completa para el proyecto
+2. ✅ Configurar Dockerfile optimizado para producción
+3. ✅ Integrar la base de datos PostgreSQL
+````
+---
+
+## 📚 Teoría Esencial
+
+### Componentes del Backend
+
+| **Componente** | **Propósito**                    | **Ubicación**           |
+| -------------- | -------------------------------- | ----------------------- |
+| **Main App**   | Punto de entrada de FastAPI      | `backend/app/main.py`   |
+| **Models**     | Modelos Pydantic para validación | `backend/app/models/`   |
+| **Routes**     | Endpoints de la API              | `backend/app/routes/`   |
+| **Services**   | Lógica de negocio                | `backend/app/services/` |
+| **Database**   | Conexión a PostgreSQL            | `backend/app/db.py`     |
+
+---
+
+### Estructura del Backend
+
+| **Archivo**          | **Propósito**                | **Ejemplo**             |
+| -------------------- | ---------------------------- | ----------------------- |
+| **main.py**          | Aplicación FastAPI principal | `app = FastAPI()`       |
+| **models.py**        | Modelos de datos Pydantic    | `class Item(BaseModel)` |
+| **routes.py**        | Endpoints de la API          | `@app.get("/items")`    |
+| **database.py**      | Conexión a base de datos     | `get_db()`              |
+| **requirements.txt** | Dependencias de Python       | `fastapi==0.109.0`      |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Estructura de Directorios del Backend
+
+```text
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── item.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   └── items.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   └── item_service.py
+│   └── db.py
+├── tests/
+│   └── test_main.py
+├── requirements.txt
+└── Dockerfile
+```
+
+
+### Main App (backend/app/main.py)
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routes import items
+from app.db import init_db
+
+app = FastAPI(
+    title="Proyecto Integrador API",
+    description="API completa integrando Python, FastAPI, Docker, n8n",
+    version="1.0.0"
+)
+
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4321"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Inicializar base de datos
+@app.on_event("startup")
+async def startup_event():
+    init_db()
+
+# Health check
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
+
+# Incluir routes
+app.include_router(items.router, prefix="/api/items", tags=["items"])
+
+@app.get("/")
+def read_root():
+    return {"message": "Bienvenido a la API del Proyecto Integrador"}
+```
+
+### Dockerfile para Backend (backend/Dockerfile)
+
+```dockerfile
+# Backend Dockerfile
+FROM python:3.12-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV NODE_ENV=production
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar aplicación
+COPY . .
+
+# Usuario no root
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Exponer puerto
+EXPOSE 8000
+
+# Ejecutar aplicación
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+```
+
+### Requirements.txt (backend/requirements.txt)
+
+```txt
+# requirements.txt
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+pytest==7.4.4
+httpx==0.26.0
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea el backend completo para el proyecto integrador
+
+```markdown
+1. Crea la estructura de directorios del backend
+2. Implementa main.py con FastAPI
+3. Crea el Dockerfile optimizado
+4. Configura requirements.txt con todas las dependencias
+5. Prueba el backend localmente
+```
+
+-- API endpoints:
+
+```python
+# Tu código aquí
+# backend/app/main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title="Proyecto Integrador API",
+    version="1.0.0"
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4321"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Health check
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+# Root endpoint
+@app.get("/")
+def read_root():
+    return {"message": "API del Proyecto Integrador"}
+```
+
+-- Dockerfile y requirements.txt ya están completos en la sección de ejemplo guiado:
+
+```dockerfile
+# Tu código aquí
+# backend/Dockerfile
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+-- comandos:
+```bash
+# Comandos para probar
+# Construir imagen
+docker build -t backend-api ./backend
+
+# Ejecutar contenedor
+docker run -p 8000:8000 backend-api
+
+# Probar API
+curl http://localhost:8000/health
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] La estructura de directorios está creada
+- [ ] El Dockerfile construye sin errores
+- [ ] La API responde en localhost:8000
+- [ ] El health check funciona correctamente
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué comando inicia uvicorn con 4 workers?**
+
+```markdown
+- `uvicorn main:app --workers 4` ✅
+- `uvicorn main:app --processes 4`
+- `uvicorn main:app -w 4`
+```
+
+**2. ¿Por qué usar python:3.12-slim en producción?**
+
+```markdown
+- Imagen más pequeña y segura ✅
+- Más rápido el build
+- Mejor compatibilidad
+```
+
+**3. ¿Qué middleware permite CORS en FastAPI?**
+
+```markdown
+- `FastAPICORS`
+- `CORSMiddleware` ✅
+- `AllowOrigins`
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                      | **URL**                                                                                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **FastAPI Docs**                 | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/)                                                                                         |
+| **Docker Python Best Practices** | [docs.docker.com/develop/develop-images/dockerfile_best-practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) |
+| **SQLAlchemy Tutorial**          | [docs.sqlalchemy.org](https://docs.sqlalchemy.org/)                                                                                           |
+| **Uvicorn Deployment**           | [www.uvicorn.org/deployment](https://www.uvicorn.org/deployment/)                                                                             |

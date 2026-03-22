@@ -1,0 +1,277 @@
+---
+title: "Automatización con n8n"
+description: "Integrar workflows de automatización con IA en el proyecto"
+module: "proyecto-integrador"
+level: "advanced"
+duration: "30 min"
+xp: 100
+order: 4
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+```markdown
+1. ✅ Configurar n8n para automatizar tareas del proyecto
+2. ✅ Crear workflows que se integren con la API FastAPI
+3. ✅ Implementar notificaciones automáticas con IA
+```
+---
+
+## 📚 Teoría Esencial
+
+### Workflows del Proyecto Integrador
+
+| **Workflow**       | **Propósito**              | **Trigger** |
+| ------------------ | -------------------------- | ----------- |
+| **Notificaciones** | Enviar emails de progreso  | Webhook     |
+| **Reportes**       | Generar reportes semanales | Schedule    |
+| **IA Analysis**    | Analizar progreso con IA   | Manual      |
+| **Backup**         | Backup automático de datos | Schedule    |
+
+---
+
+### Integración n8n + FastAPI
+
+| **Endpoint**                  | **Propósito**               | **Método** |
+| ----------------------------- | --------------------------- | ---------- |
+| `POST /api/webhooks/progress` | Recibir progreso de usuario | POST       |
+| `GET /api/users/:id/progress` | Obtener progreso de usuario | GET        |
+| `POST /api/notifications`     | Enviar notificación         | POST       |
+| `GET /api/reports/weekly`     | Generar reporte semanal     | GET        |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Workflow de Notificaciones de Progreso
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "user-progress",
+        "responseMode": "lastNode"
+      }
+    },
+    {
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "parameters": {
+        "operation": "text",
+        "model": "gpt-3.5-turbo",
+        "prompt": "Genera un mensaje motivacional para un usuario que completó {{ $json.lesson }} con {{ $json.xp }} XP"
+      }
+    },
+    {
+      "name": "Email",
+      "type": "n8n-nodes-base.emailSend",
+      "parameters": {
+        "to": "{{ $json.user_email }}",
+        "subject": "¡Felicidades por tu progreso!",
+        "body": "{{ $json.output }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "OpenAI", "type": "main", "index": 0 }]]
+    },
+    "OpenAI": {
+      "main": [[{ "node": "Email", "type": "main", "index": 0 }]]
+    }
+  }
+}
+```
+
+### Workflow de Reportes Semanales
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "hours": 9,
+              "minutes": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "http://backend:8000/api/reports/weekly"
+      }
+    },
+    {
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "parameters": {
+        "channel": "#progreso",
+        "text": "Reporte semanal: {{ $json.total_xp }} XP esta semana"
+      }
+    }
+  ]
+}
+```
+
+### Configurar n8n en Docker Compose
+
+```yaml
+# docker-compose.yml (sección n8n)
+n8n:
+  image: n8nio/n8n:latest
+  container_name: n8n-automation
+  ports:
+    - "5678:5678"
+  environment:
+    - N8N_HOST=localhost
+    - N8N_PORT=5678
+    - WEBHOOK_URL=http://localhost:5678/
+    - N8N_BASIC_AUTH_ACTIVE=true
+    - N8N_BASIC_AUTH_USER=admin
+    - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+  volumes:
+    - n8n-data:/home/node/.n8n
+  networks:
+    - app-network
+  restart: always
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Crea un workflow de notificaciones para el proyecto
+
+```markdown
+1. Configura n8n en docker-compose.yml
+2. Crea un webhook para recibir progreso de usuarios
+3. Añade nodo de IA para generar mensajes personalizados
+4. Configura nodo de email para enviar notificaciones
+5. Prueba el workflow completo
+```
+
+-archivo cofiguración n8n:
+
+```yaml
+# Tu código aquí
+# docker-compose.yml (n8n section)
+n8n:
+  image: n8nio/n8n:latest
+  ports:
+    - "5678:5678"
+  environment:
+    - N8N_HOST=localhost
+    - WEBHOOK_URL=http://localhost:5678/
+  volumes:
+    - n8n-data:/home/node/.n8n
+  networks:
+    - app-network
+```
+
+-- webhooks:
+
+```python
+# Backend endpoint para trigger de n8n
+# backend/app/routes/webhooks.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class ProgressData(BaseModel):
+    user_id: int
+    lesson: str
+    xp: int
+    user_email: str
+
+@router.post("/webhooks/progress")
+async def user_progress(data: ProgressData):
+    # Trigger n8n webhook
+    import requests
+    requests.post(
+        "http://n8n:5678/webhook/user-progress",
+        json=data.dict()
+    )
+    return {"status": "notification sent"}
+```
+
+-- comandos:
+
+```bash
+# Comandos para probar
+# Iniciar n8n
+docker-compose up -d n8n
+
+# Acceder a n8n
+# http://localhost:5678
+
+# Probar webhook
+curl -X POST http://localhost:8000/api/webhooks/progress \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 1, "lesson": "Python Basics", "xp": 50, "user_email": "user@example.com"}'
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] n8n está configurado en docker-compose.yml
+- [ ] El webhook recibe datos correctamente
+- [ ] La IA genera mensajes personalizados
+- [ ] Las notificaciones se envían correctamente
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué nodo se usa para triggers programados en n8n?**
+
+```markdown
+- `Timer`
+- `Schedule` ✅
+- `Cron`
+```
+
+**2. ¿Cómo se llama un webhook en n8n?**
+
+```markdown
+- `Webhook` ✅
+- `HTTP Trigger`
+- `API Receiver`
+```
+
+**3. ¿Dónde se configuran las credenciales de n8n?**
+
+```markdown
+- En el workflow
+- En Credentials ✅
+- En docker-compose.yml
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**                   | **URL**                                                                                                                                                                 |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **n8n Docs**                  | [docs.n8n.io](https://docs.n8n.io/)                                                                                                                                     |
+| **n8n Workflow Templates**    | [n8n.io/workflows](https://n8n.io/workflows)                                                                                                                            |
+| **n8n + FastAPI Integration** | [docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/)               |
+| **LangChain n8n**             | [docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain/) |

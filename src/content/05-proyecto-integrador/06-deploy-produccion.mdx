@@ -1,0 +1,281 @@
+
+---
+title: "Deploy a Producción"
+description: "Desplegar el proyecto completo en producción con todas las tecnologías"
+module: "proyecto-integrador"
+level: "advanced"
+duration: "25 min"
+xp: 75
+order: 6
+---
+
+## 🎯 Objetivos de Aprendizaje
+
+Al finalizar esta lección podrás:
+````markdown
+1. ✅ Configurar el deploy completo del proyecto
+2. ✅ Implementar monitoreo y logs en producción
+3. ✅ Mantener y escalar la aplicación en producción
+````
+---
+
+## 📚 Teoría Esencial
+
+### Checklist de Producción
+
+| **Componente**     | **Configuración**          | **Verificado** |
+| ------------------ | -------------------------- | -------------- |
+| **Frontend**       | Astro build optimizado     | ✅             |
+| **Backend**        | FastAPI + Uvicorn workers  | ✅             |
+| **Base de Datos**  | PostgreSQL con backups     | ✅             |
+| **Automatización** | n8n workflows activos      | ✅             |
+| **CI/CD**          | GitHub Actions pipelines   | ✅             |
+| **Docker**         | Contenedores en producción | ✅             |
+
+---
+
+### Servicios de Deploy
+
+| **Servicio**           | **Propósito**            | **Costo**   |
+| ---------------------- | ------------------------ | ----------- |
+| **VPS (DigitalOcean)** | Servidor virtual privado | $5-10/mes   |
+| **AWS EC2**            | Servidor cloud de AWS    | Pay per use |
+| **Google Cloud Run**   | Contenedores serverless  | Pay per use |
+| **Railway**            | Deploy simplificado      | Gratis/$5   |
+| **Render**             | Hosting para apps web    | Gratis/$7   |
+
+---
+
+## 💻 Ejemplo Guiado
+
+### Docker Compose para Producción
+
+```yaml
+# docker-compose.prod.yml
+version: "3.8"
+
+services:
+  # Frontend Astro
+  frontend:
+    image: ghcr.io/${{ github.repository }}-frontend:latest
+    container_name: astro-frontend
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+    networks:
+      - prod-network
+    restart: always
+
+  # Backend FastAPI
+  backend:
+    image: ghcr.io/${{ github.repository }}-backend:latest
+    container_name: fastapi-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=production
+    depends_on:
+      - db
+    networks:
+      - prod-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # PostgreSQL
+  db:
+    image: postgres:15
+    container_name: postgres-prod
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - prod-db-/var/lib/postgresql/data
+    networks:
+      - prod-network
+    restart: always
+
+  # n8n Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-prod
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+    volumes:
+      - n8n-/home/node/.n8n
+    networks:
+      - prod-network
+    restart: always
+
+volumes: prod-db-
+  n8n-
+
+networks:
+  prod-network:
+    driver: bridge
+```
+
+
+### Script de Deploy (deploy.sh)
+
+```bash
+#!/bin/bash
+# deploy.sh
+
+echo "🚀 Iniciando deploy a producción..."
+
+# 1. Pull de últimas imágenes
+docker-compose -f docker-compose.prod.yml pull
+
+# 2. Detener servicios actuales
+docker-compose -f docker-compose.prod.yml down
+
+# 3. Iniciar nuevos servicios
+docker-compose -f docker-compose.prod.yml up -d
+
+# 4. Esperar que los servicios estén listos
+sleep 10
+
+# 5. Health check
+echo "🔍 Verificando salud de servicios..."
+curl -f http://localhost:8000/health || exit 1
+curl -f http://localhost:4321/ || exit 1
+
+# 6. Limpieza
+docker system prune -f
+
+echo "✅ Deploy completado exitosamente!"
+```
+
+### Monitoreo y Logs
+
+```bash
+# Ver logs de todos los servicios
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Ver logs de un servicio específico
+docker-compose -f docker-compose.prod.yml logs -f backend
+
+# Ver estado de contenedores
+docker-compose -f docker-compose.prod.yml ps
+
+# Ver uso de recursos
+docker stats
+
+# Backup de base de datos
+docker exec postgres-prod pg_dump -U user appdb > backup.sql
+```
+
+---
+
+## 🎮 Ejercicio Práctico
+
+**Reto:** Despliega tu proyecto en producción
+
+```markdown
+1. Configura un servidor VPS o cloud
+2. Sube los archivos del proyecto
+3. Configura variables de entorno
+4. Ejecuta el script de deploy
+5. Verifica que todos los servicios funcionan
+```
+
+--comando deploy:
+
+```bash
+# Tu código aquí
+# deploy.sh
+#!/bin/bash
+
+echo "🚀 Deploying Python Learning App..."
+
+# Pull images
+docker-compose -f docker-compose.prod.yml pull
+
+# Restart services
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d
+
+# Health check
+sleep 10
+curl -f http://localhost:8000/health && echo "✅ Backend OK"
+curl -f http://localhost:4321/ && echo "✅ Frontend OK"
+
+echo "✅ Deploy complete!"
+```
+
+-- comandos para verificar:
+
+```bash
+# Comandos para verificar
+# Ver estado
+docker-compose -f docker-compose.prod.yml ps
+
+# Ver logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Health check
+curl http://localhost:8000/health
+curl http://localhost:4321/
+```
+
+---
+
+## ✅ Criterios de Éxito
+
+```markdown
+- [ ] Todos los servicios están corriendo
+- [ ] El frontend responde en el puerto 4321
+- [ ] El backend responde en el puerto 8000
+- [ ] Los health checks pasan correctamente
+- [ ] Los logs no muestran errores críticos
+```
+
+---
+
+## ✅ Check de Comprensión
+
+**1. ¿Qué comando reinicia todos los servicios?**
+
+```markdown
+- `docker-compose restart`
+- `docker-compose down && docker-compose up -d` ✅
+- `docker-compose refresh`
+```
+
+**2. ¿Por qué hacer health checks después del deploy?**
+
+```markdown
+- Verificar que los servicios están funcionando ✅
+- Mejorar el rendimiento
+- Limpiar caches
+```
+
+**3. ¿Dónde se guardan los backups de PostgreSQL?**
+
+```markdown
+- En el contenedor
+- En volúmenes Docker persistentes ✅
+- En la memoria RAM
+```
+
+---
+
+## 🔗 Para Profundizar
+
+| **Recurso**            | **URL**                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| **Docker Production**  | [docs.docker.com/engine/swarm](https://docs.docker.com/engine/swarm/)                      |
+| **PostgreSQL Backup**  | [postgresql.org/docs/current/backup.html](https://postgresql.org/docs/current/backup.html) |
+| **Uvicorn Deployment** | [www.uvicorn.org/deployment](https://www.uvicorn.org/deployment/)                          |
+| **Astro Deployment**   | [docs.astro.build/guides/deploy](https://docs.astro.build/guides/deploy/)                  |
