@@ -76,7 +76,7 @@ const modules = [
     <h2 class="text-2xl font-bold mb-4">Módulos</h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {modules.map((module) => (
-        <a href={`/modules/${module.slug}`} class="p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition shadow-sm hover:shadow-md">
+        <a href={`${import.meta.env.BASE_URL}modules/${module.slug}`} class="p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-500 transition shadow-sm hover:shadow-md">
           <div class={`w-12 h-12 ${module.badgeColor} rounded-lg flex items-center justify-center text-white font-bold mb-4`}>6</div>
           <h3 class="font-bold text-lg mb-2">{module.title}</h3>
           <p class="text-sm text-gray-500 mb-4">{module.description}</p>

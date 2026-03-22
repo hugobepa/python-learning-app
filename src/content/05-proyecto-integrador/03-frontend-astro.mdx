@@ -83,14 +83,14 @@ const { title, description = "Python Learning App" } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/global.css`} />
   </head>
   <body>
     <header>
       <nav>
-        <a href="/">Inicio</a>
-        <a href="/modules">Módulos</a>
-        <a href="/dashboard">Dashboard</a>
+        <a href={`${import.meta.env.BASE_URL}`}>Inicio</a>
+        <a href={`${import.meta.env.BASE_URL}modules`}>Módulos</a>
+        <a href={`${import.meta.env.BASE_URL}dashboard`}>Dashboard</a>
       </nav>
     </header>
     <main>
@@ -257,7 +257,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="hero">
     <h1>Aprende Python con Proyectos Reales</h1>
     <p>5 módulos, 30 lecciones, 3,300 XP</p>
-    <a href="/modules" class="btn">Comenzar Ahora</a>
+    <a href={`${import.meta.env.BASE_URL}modules`} class="btn">Comenzar Ahora</a>
   </section>
 
   <section class="features">

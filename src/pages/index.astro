@@ -22,10 +22,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/dashboard" class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-700 transition shadow-lg">
+        <a href={`${import.meta.env.BASE_URL}dashboard`} class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-700 transition shadow-lg">
           Comenzar Gratis
         </a>
-        <a href="/modules" class="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-50 transition">
+        <a href={`${import.meta.env.BASE_URL}modules`} class="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg text-lg font-bold hover:bg-blue-50 transition">
           Ver Módulos
         </a>
       </div>

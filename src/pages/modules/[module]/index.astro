@@ -97,15 +97,15 @@ const lessons = data?.lessons ?? [];
 
 <BaseLayout title={title} description={description}>
   <div id="module-top" class="max-w-4xl mx-auto px-4 py-8">
-    <a href="/modules" class="text-blue-600 hover:underline mb-4 inline-block">← Volver a módulos</a>
+    <a href={`${import.meta.env.BASE_URL}modules`} class="text-blue-600 hover:underline mb-4 inline-block">← Volver a módulos</a>
     
     <h1 class="text-3xl font-bold mb-4">{title}</h1>
     <p class="text-gray-600 mb-8">{description}</p>
     
-    {lessons.length === 0 ? (
+      {lessons.length === 0 ? (
       <div class="text-center py-12 bg-white rounded-xl border">
         <p class="text-gray-500 text-lg mb-4">🚧 Módulo no disponible</p>
-        <a href="/modules" class="text-blue-600 hover:underline">← Volver a módulos</a>
+        <a href={`${import.meta.env.BASE_URL}modules`} class="text-blue-600 hover:underline">← Volver a módulos</a>
       </div>
     ) : (
       <div class="space-y-3 md:space-y-5">
@@ -116,8 +116,8 @@ const lessons = data?.lessons ?? [];
                 <h3 class="font-bold text-base md:text-lg lg:text-xl break-words">{lesson.order}. {lesson.title}</h3>
                 <p class="mt-1 text-sm text-gray-500 break-words md:text-base">⏱️ {lesson.duration} • 🏆 {lesson.xp} XP</p>
               </div>
-              <a
-                href={`/modules/${module}/${lesson.order}`}
+                <a
+                href={`${import.meta.env.BASE_URL}modules/${module}/${lesson.order}`}
                 class="w-full rounded-lg bg-blue-600 px-4 py-2 text-center text-sm text-white transition hover:bg-blue-700 md:w-auto md:shrink-0 md:px-6 md:py-2.5 md:text-base"
               >
                 Comenzar
